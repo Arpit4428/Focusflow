@@ -96,12 +96,12 @@ export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data }) => {
                   height: `${heightPercent}%`,
                   borderRadius: '10px 10px 4px 4px',
                   backgroundColor: isToday
-                    ? 'var(--accent-lime)'
+                    ? (dayStat.minutes > 0 ? 'var(--accent-mustard)' : 'var(--border-strong)')
                     : dayStat.minutes > 0
-                    ? 'var(--surface-green)'
+                    ? 'var(--surface-sage)'
                     : 'var(--bg-secondary)',
-                  border: isToday ? '1px solid rgba(17, 17, 17, 0.12)' : 'none',
-                  boxShadow: isToday && dayStat.minutes > 0 ? '0 2px 8px rgba(231, 255, 99, 0.4)' : 'none',
+                  border: isToday ? '1px solid var(--border-strong)' : 'none',
+                  boxShadow: isToday && dayStat.minutes > 0 ? '0 2px 6px rgba(214, 184, 90, 0.3)' : 'none',
                   transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                   cursor: 'pointer',
                 }} />
@@ -119,10 +119,10 @@ export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data }) => {
                   {isToday ? 'Today' : dayStat.day}
                   {isToday && (
                     <span style={{
-                      width: '4px',
-                      height: '4px',
+                      width: '5px',
+                      height: '5px',
                       borderRadius: '50%',
-                      backgroundColor: 'var(--text-primary)',
+                      backgroundColor: 'var(--accent-mustard)',
                       display: 'inline-block',
                     }} />
                   )}

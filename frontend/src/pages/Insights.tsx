@@ -45,8 +45,8 @@ export const Insights: React.FC = () => {
         <div style={{
           width: '36px',
           height: '36px',
-          border: '3px solid var(--border-strong)',
-          borderTopColor: 'var(--text-primary)',
+          border: '3px solid var(--border)',
+          borderTopColor: 'var(--accent-primary)',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
           margin: '0 auto 16px',
@@ -94,7 +94,7 @@ export const Insights: React.FC = () => {
           Academic Productivity Insights
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '15px', marginTop: '6px' }}>
-          Deterministic rule-based evaluation of study consistency, subject time distribution, and task velocity.
+          Analytical breakdown of study consistency, subject time distribution, and task velocity.
         </p>
       </div>
 
@@ -111,7 +111,7 @@ export const Insights: React.FC = () => {
             width: '52px',
             height: '52px',
             borderRadius: '50%',
-            backgroundColor: 'var(--surface-mint)',
+            backgroundColor: 'var(--surface-sage)',
             color: 'var(--text-primary)',
             display: 'flex',
             alignItems: 'center',
@@ -136,10 +136,11 @@ export const Insights: React.FC = () => {
             gap: '20px',
             marginBottom: '36px',
           }}>
-            {/* Metric 1: Total Focus (Dominant Mint) */}
+            {/* Metric 1: Total Focus (Dominant Muted Sage) */}
             <div style={{
-              backgroundColor: 'var(--surface-mint)',
+              backgroundColor: 'var(--surface-sage)',
               borderRadius: 'var(--radius-lg)',
+              border: '1px solid var(--border)',
               padding: '28px',
               display: 'flex',
               flexDirection: 'column',
@@ -246,69 +247,6 @@ export const Insights: React.FC = () => {
             </div>
           </div>
 
-          {/* Editorial Recommendations Section */}
-          <div style={{ marginBottom: '36px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div>
-                <h2 style={{ fontSize: '20px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-                  Academic Habit Recommendations
-                </h2>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Deterministic analytical feedback derived from your activity metrics
-                </p>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
-              {data.recommendations.map((rec, i) => {
-                const isWarning = rec.type === 'WARNING';
-                const isSuccess = rec.type === 'SUCCESS';
-
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      backgroundColor: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-lg)',
-                      padding: '24px',
-                      boxShadow: 'var(--shadow-subtle)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                        <span style={{
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          backgroundColor: isWarning ? 'var(--accent-coral)' : isSuccess ? 'var(--accent-lime)' : 'var(--text-primary)',
-                        }} />
-                        <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                          {rec.title}
-                        </h3>
-                      </div>
-                      <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                        {rec.message}
-                      </p>
-                    </div>
-
-                    <div style={{ marginTop: '18px', paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
-                      <span className="badge" style={{
-                        backgroundColor: isWarning ? 'var(--accent-coral-soft)' : isSuccess ? 'var(--surface-mint)' : 'var(--bg-secondary)',
-                        color: isWarning ? 'var(--accent-coral-text)' : isSuccess ? '#1F4C27' : 'var(--text-secondary)',
-                        fontSize: '10px',
-                      }}>
-                        {rec.type}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Two-Column Section: Subject Allocation & Weekly Distribution */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '28px' }}>
@@ -349,7 +287,7 @@ export const Insights: React.FC = () => {
                         <div style={{
                           height: '100%',
                           width: `${item.percentage}%`,
-                          backgroundColor: 'var(--surface-green)',
+                          backgroundColor: 'var(--accent-primary)',
                           borderRadius: 'var(--radius-pill)',
                         }} />
                       </div>
@@ -385,7 +323,7 @@ export const Insights: React.FC = () => {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '12px 16px',
-                        backgroundColor: isTopDay ? 'var(--surface-mint)' : 'transparent',
+                        backgroundColor: isTopDay ? 'var(--surface-sage)' : 'transparent',
                         borderBottom: isTopDay ? 'none' : '1px solid var(--border)',
                         borderRadius: isTopDay ? 'var(--radius-md)' : '0',
                         transition: 'var(--transition)',
@@ -396,7 +334,7 @@ export const Insights: React.FC = () => {
                           {item.dayOfWeek}
                         </span>
                         {isTopDay && (
-                          <span className="badge" style={{ backgroundColor: 'var(--accent-lime)', color: '#111111', fontSize: '9px' }}>
+                          <span className="badge" style={{ backgroundColor: 'var(--accent-mustard)', color: 'var(--text-primary)', fontSize: '9px', fontWeight: 700 }}>
                             Top Day
                           </span>
                         )}

@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { taskService } from '../services/taskService';
+import { subjectService } from '../services/subjectService';
 import type { Task, Priority, TaskStatus } from '../types/task';
+import type { Subject } from '../types/subject';
 import type { ApiError } from '../types/auth';
 import {
   Plus,
@@ -31,7 +34,9 @@ export const Tasks: React.FC = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Form states
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [formTitle, setFormTitle] = useState('');
+  const [formSubjectId, setFormSubjectId] = useState('');
   const [formSubject, setFormSubject] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formPriority, setFormPriority] = useState<Priority>('MEDIUM');
@@ -55,13 +60,26 @@ export const Tasks: React.FC = () => {
     }
   }, [statusFilter, priorityFilter]);
 
+  const fetchSubjects = useCallback(async () => {
+    try {
+      const data = await subjectService.getSubjects();
+      setSubjects(data);
+    } catch {
+      // Non-blocking
+    }
+  }, []);
+
   useEffect(() => {
     fetchTasks();
-  }, [fetchTasks]);
+    fetchSubjects();
+  }, [fetchTasks, fetchSubjects]);
 
   const openCreateModal = () => {
     setFormTitle('');
-    setFormSubject('');
+    const defaultSubId = subjects.length > 0 ? subjects[0].id : '';
+    const defaultSubName = subjects.length > 0 ? subjects[0].name : '';
+    setFormSubjectId(defaultSubId);
+    setFormSubject(defaultSubName);
     setFormDescription('');
     setFormPriority('MEDIUM');
     // Default to tomorrow 23:59
@@ -76,6 +94,13 @@ export const Tasks: React.FC = () => {
   const openEditModal = (task: Task) => {
     setEditingTask(task);
     setFormTitle(task.title);
+
+    let matchedSubjectId = task.subjectId || '';
+    if (!matchedSubjectId && task.subject) {
+      const matched = subjects.find((s) => s.name.toLowerCase() === task.subject.toLowerCase());
+      if (matched) matchedSubjectId = matched.id;
+    }
+    setFormSubjectId(matchedSubjectId);
     setFormSubject(task.subject);
     setFormDescription(task.description || '');
     setFormPriority(task.priority);
@@ -89,7 +114,7 @@ export const Tasks: React.FC = () => {
 
   const handleSaveTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formTitle.trim() || !formSubject.trim() || !formDueDate) {
+    if (!formTitle.trim() || (!formSubjectId && !formSubject.trim()) || !formDueDate) {
       setFormError('Title, subject, and due date are required.');
       return;
     }
@@ -99,6 +124,7 @@ export const Tasks: React.FC = () => {
 
     const payload = {
       title: formTitle.trim(),
+      subjectId: formSubjectId || undefined,
       subject: formSubject.trim(),
       description: formDescription.trim() || undefined,
       priority: formPriority,
@@ -196,7 +222,7 @@ export const Tasks: React.FC = () => {
 
         <button
           onClick={openCreateModal}
-          className="btn btn-lime"
+          className="btn btn-primary"
           style={{ padding: '12px 24px' }}
         >
           <Plus size={16} />
@@ -248,7 +274,7 @@ export const Tasks: React.FC = () => {
                 fontSize: '12px',
                 fontWeight: 600,
                 borderRadius: 'var(--radius-pill)',
-                backgroundColor: statusFilter === s ? 'var(--surface-mint)' : 'transparent',
+                backgroundColor: statusFilter === s ? 'var(--surface-sage)' : 'transparent',
                 color: statusFilter === s ? 'var(--text-primary)' : 'var(--text-secondary)',
                 transition: 'var(--transition)',
               }}
@@ -331,7 +357,7 @@ export const Tasks: React.FC = () => {
               ? 'No tasks match your active filters. Try resetting the filters.'
               : 'You have no study tasks logged yet. Create your first task to plan your academic focus!'}
           </p>
-          <button onClick={openCreateModal} className="btn btn-lime" style={{ width: 'auto' }}>
+          <button onClick={openCreateModal} className="btn btn-primary" style={{ width: 'auto' }}>
             <Plus size={16} />
             <span>Create First Task</span>
           </button>
@@ -361,7 +387,7 @@ export const Tasks: React.FC = () => {
                   justifyContent: 'space-between',
                   gap: '16px',
                   borderBottom: isLast ? 'none' : '1px solid var(--border)',
-                  backgroundColor: isCompleted ? 'rgba(243, 246, 241, 0.4)' : 'transparent',
+                  backgroundColor: isCompleted ? 'rgba(239, 233, 222, 0.45)' : 'transparent',
                   transition: 'var(--transition)',
                 }}
               >
@@ -371,7 +397,7 @@ export const Tasks: React.FC = () => {
                     onClick={() => handleToggleComplete(task.id)}
                     style={{
                       background: 'none',
-                      color: isCompleted ? '#1F4C27' : 'var(--text-muted)',
+                      color: isCompleted ? 'var(--accent-primary)' : 'var(--text-muted)',
                       padding: '2px',
                       cursor: 'pointer',
                       marginTop: '3px',
@@ -380,7 +406,7 @@ export const Tasks: React.FC = () => {
                     title={isCompleted ? 'Mark Pending' : 'Mark Completed'}
                     aria-label={isCompleted ? 'Mark Pending' : 'Mark Completed'}
                   >
-                    {isCompleted ? <CheckCircle2 size={22} color="#1F4C27" /> : <Circle size={22} />}
+                    {isCompleted ? <CheckCircle2 size={22} color="var(--accent-primary)" /> : <Circle size={22} />}
                   </button>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -510,16 +536,72 @@ export const Tasks: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div className="form-group">
-                  <label className="form-label" htmlFor="taskSubject">Subject / Category *</label>
-                  <input
-                    id="taskSubject"
-                    type="text"
-                    className="form-input"
-                    placeholder="e.g. Mathematics"
-                    value={formSubject}
-                    onChange={(e) => setFormSubject(e.target.value)}
-                    required
-                  />
+                  <label className="form-label" htmlFor="taskSubject">Subject *</label>
+                  {subjects.length === 0 ? (
+                    <div style={{
+                      padding: '10px 12px',
+                      borderRadius: 'var(--radius-sm)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      fontSize: '13px',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      border: '1px solid var(--border)',
+                    }}>
+                      <span>No subjects yet.</span>
+                      <Link
+                        to="/subjects"
+                        style={{
+                          color: 'var(--text-primary)',
+                          fontWeight: 600,
+                          textDecoration: 'underline',
+                          fontSize: '12px',
+                        }}
+                      >
+                        Create Subject
+                      </Link>
+                    </div>
+                  ) : (
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <select
+                        id="taskSubject"
+                        className="form-input"
+                        value={formSubjectId}
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          setFormSubjectId(selectedId);
+                          const sub = subjects.find((s) => s.id === selectedId);
+                          if (sub) setFormSubject(sub.name);
+                        }}
+                        required
+                        style={{ paddingLeft: '32px' }}
+                      >
+                        <option value="" disabled>Select a subject...</option>
+                        {formSubject && !subjects.some((s) => s.id === formSubjectId) && (
+                          <option value="">{formSubject} (Legacy)</option>
+                        )}
+                        {subjects.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: '12px',
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          backgroundColor:
+                            subjects.find((s) => s.id === formSubjectId)?.color || '#DDEBDF',
+                          border: '1px solid rgba(0,0,0,0.15)',
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -575,7 +657,7 @@ export const Tasks: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-lime"
+                  className="btn btn-primary"
                   disabled={isSaving}
                 >
                   {isSaving ? 'Saving...' : editingTask ? 'Update Task' : 'Create Task'}

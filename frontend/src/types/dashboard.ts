@@ -8,6 +8,18 @@ export interface DailyFocusStat {
   minutes: number;
 }
 
+export interface SubjectStat {
+  subjectId: string | null;
+  subjectName: string;
+  color: string;
+  focusSeconds: number;
+  focusMinutes: number;
+  focusPercentage: number;
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+}
+
 export interface DashboardData {
   todayFocusSeconds: number;
   totalTasks: number;
@@ -18,4 +30,6 @@ export interface DashboardData {
   weeklyFocus: DailyFocusStat[];
   recentTasks: Task[];
   recentSessions: FocusSession[];
+  subjectAnalytics: SubjectStat[];
+  dailyFocusGoalMinutes: number;
 }

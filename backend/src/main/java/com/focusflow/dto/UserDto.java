@@ -8,6 +8,7 @@ public class UserDto {
     private String name;
     private String email;
     private Instant createdAt;
+    private Integer dailyFocusGoalMinutes = 120;
 
     public UserDto() {
     }
@@ -17,6 +18,15 @@ public class UserDto {
         this.name = name;
         this.email = email;
         this.createdAt = createdAt;
+        this.dailyFocusGoalMinutes = 120;
+    }
+
+    public UserDto(String id, String name, String email, Instant createdAt, Integer dailyFocusGoalMinutes) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.createdAt = createdAt;
+        this.dailyFocusGoalMinutes = dailyFocusGoalMinutes != null ? dailyFocusGoalMinutes : 120;
     }
 
     public String getId() {
@@ -49,5 +59,13 @@ public class UserDto {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getDailyFocusGoalMinutes() {
+        return dailyFocusGoalMinutes != null ? dailyFocusGoalMinutes : 120;
+    }
+
+    public void setDailyFocusGoalMinutes(Integer dailyFocusGoalMinutes) {
+        this.dailyFocusGoalMinutes = dailyFocusGoalMinutes != null ? dailyFocusGoalMinutes : 120;
     }
 }

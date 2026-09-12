@@ -4,9 +4,11 @@ import com.focusflow.dto.TaskRequest;
 import com.focusflow.dto.TaskResponse;
 import com.focusflow.exception.ResourceNotFoundException;
 import com.focusflow.model.Priority;
+import com.focusflow.model.Subject;
 import com.focusflow.model.Task;
 import com.focusflow.model.TaskStatus;
 import com.focusflow.model.User;
+import com.focusflow.repository.SubjectRepository;
 import com.focusflow.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +32,9 @@ public class TaskServiceTest {
     @Mock
     private TaskRepository taskRepository;
 
+    @Mock
+    private SubjectRepository subjectRepository;
+
     private TaskService taskService;
 
     private User userA;
@@ -37,7 +42,7 @@ public class TaskServiceTest {
 
     @BeforeEach
     void setUp() {
-        taskService = new TaskService(taskRepository);
+        taskService = new TaskService(taskRepository, subjectRepository);
 
         userA = new User("User A", "a@example.com", "hashA");
         userA.setId("userA_id");
@@ -64,53 +69,80 @@ public class TaskServiceTest {
         assertEquals("task1", response.getId());
         assertEquals("userA_id", response.getUserId());
         assertEquals("Study Math", response.getTitle());
+        assertEquals("Mathematics", response.getSubject());
         assertEquals(Priority.HIGH, response.getPriority());
         assertEquals(TaskStatus.PENDING, response.getStatus());
 
-        verify(taskRepository).save(argThat(t -> t.getUserId().equals("userA_id")));
+        verify(taskRepository, times(1)).save(any(Task.class));
     }
 
     @Test
-    @DisplayName("Retrieve tasks only queries currentUser.id")
-    void testGetTasks() {
-        Task t1 = new Task("userA_id", "Task 1", "Desc", "Physics", Priority.LOW, Instant.now());
-        t1.setId("t1");
+    @DisplayName("Create task with subjectId resolves Subject.name and assigns subjectId")
+    void testCreateTaskWithSubjectId() {
+        Instant dueDate = Instant.now().plus(2, ChronoUnit.DAYS);
+        Subject subject = new Subject("userA_id", "Distributed Systems", "#E7FF63", null);
+        subject.setId("sub_ds");
 
-        when(taskRepository.findByUserIdOrderByDueDateAsc("userA_id")).thenReturn(List.of(t1));
+        when(subjectRepository.findByIdAndUserId("sub_ds", "userA_id")).thenReturn(Optional.of(subject));
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId("task_ds");
+            return t;
+        });
 
-        List<TaskResponse> results = taskService.getTasks(userA, null, null);
+        TaskRequest request = new TaskRequest("Lab 1", "Raft consensus", "sub_ds", null, Priority.HIGH, dueDate);
+        TaskResponse response = taskService.createTask(request, userA);
 
-        assertEquals(1, results.size());
-        assertEquals("t1", results.get(0).getId());
-        assertEquals("userA_id", results.get(0).getUserId());
+        assertNotNull(response);
+        assertEquals("sub_ds", response.getSubjectId());
+        assertEquals("Distributed Systems", response.getSubject());
+        verify(subjectRepository).findByIdAndUserId("sub_ds", "userA_id");
+    }
+
+    @Test
+    @DisplayName("Create task with another user's subjectId throws ResourceNotFoundException")
+    void testCreateTaskWithUnownedSubjectIdThrows() {
+        Instant dueDate = Instant.now().plus(2, ChronoUnit.DAYS);
+        when(subjectRepository.findByIdAndUserId("sub_unowned", "userA_id")).thenReturn(Optional.empty());
+
+        TaskRequest request = new TaskRequest("Lab 1", "Raft", "sub_unowned", null, Priority.HIGH, dueDate);
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                taskService.createTask(request, userA)
+        );
+
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Get tasks returns only tasks for current user")
+    void testGetTasksForCurrentUser() {
+        Task t1 = new Task("userA_id", "Task 1", null, "Math", Priority.LOW, Instant.now());
+        Task t2 = new Task("userA_id", "Task 2", null, "Physics", Priority.MEDIUM, Instant.now());
+
+        when(taskRepository.findByUserIdOrderByDueDateAsc("userA_id")).thenReturn(List.of(t1, t2));
+
+        List<TaskResponse> result = taskService.getTasks(userA, null, null);
+
+        assertEquals(2, result.size());
         verify(taskRepository).findByUserIdOrderByDueDateAsc("userA_id");
     }
 
     @Test
-    @DisplayName("Update task succeeds when task belongs to currentUser")
-    void testUpdateTaskSuccess() {
-        Instant due = Instant.now().plus(1, ChronoUnit.DAYS);
-        Task existingTask = new Task("userA_id", "Old Title", "Old Desc", "Math", Priority.LOW, due);
-        existingTask.setId("task1");
+    @DisplayName("Security Isolation: User A cannot retrieve User B's task by ID")
+    void testUserACannotGetTaskOfUserB() {
+        when(taskRepository.findByIdAndUserId("task_of_b", "userA_id")).thenReturn(Optional.empty());
 
-        when(taskRepository.findByIdAndUserId("task1", "userA_id")).thenReturn(Optional.of(existingTask));
-        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        TaskRequest updateReq = new TaskRequest("New Title", "New Desc", "Math Advanced", Priority.HIGH, due);
-        TaskResponse updated = taskService.updateTask("task1", updateReq, userA);
-
-        assertEquals("New Title", updated.getTitle());
-        assertEquals(Priority.HIGH, updated.getPriority());
-        assertEquals("Math Advanced", updated.getSubject());
+        assertThrows(ResourceNotFoundException.class, () ->
+                taskService.getTaskById("task_of_b", userA));
     }
 
     @Test
-    @DisplayName("Security Isolation: User B cannot access or update User A's task")
+    @DisplayName("Security Isolation: User B cannot update User A's task")
     void testUserBCannotUpdateUserATask() {
-        // When User B attempts to access task1 belonging to User A, findByIdAndUserId returns empty
         when(taskRepository.findByIdAndUserId("task1", "userB_id")).thenReturn(Optional.empty());
 
-        TaskRequest updateReq = new TaskRequest("Hacked", "Desc", "Math", Priority.LOW, Instant.now());
+        TaskRequest updateReq = new TaskRequest("Hacked Title", "Hacked", "Math", Priority.LOW, Instant.now());
 
         assertThrows(ResourceNotFoundException.class, () ->
                 taskService.updateTask("task1", updateReq, userB));

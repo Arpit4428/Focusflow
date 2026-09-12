@@ -6,6 +6,8 @@ import { taskService } from '../services/taskService';
 import { sessionService } from '../services/sessionService';
 import { WeeklyBarChart } from '../components/charts/WeeklyBarChart';
 import { FocusHistoryList } from '../components/focus/FocusHistoryList';
+import { DailyGoalModal } from '../components/dashboard/DailyGoalModal';
+import { userService } from '../services/userService';
 import type { DashboardData } from '../types/dashboard';
 import type { ApiError } from '../types/auth';
 import {
@@ -16,7 +18,8 @@ import {
   ArrowRight,
   AlertCircle,
   Circle,
-  HelpCircle,
+  Layers,
+  Pencil,
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -26,7 +29,7 @@ export const Dashboard: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showFormulaInfo, setShowFormulaInfo] = useState(false);
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
@@ -82,14 +85,27 @@ export const Dashboard: React.FC = () => {
     return '0m';
   };
 
+  const formatGoal = (totalMins: number) => {
+    const hrs = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    if (hrs > 0 && mins > 0) return `${hrs}h ${mins.toString().padStart(2, '0')}m`;
+    if (hrs > 0) return `${hrs}h 00m`;
+    return `${mins}m`;
+  };
+
+  const handleSaveGoal = async (newGoalMinutes: number) => {
+    await userService.updatePreferences({ dailyFocusGoalMinutes: newGoalMinutes });
+    setData((prev) => (prev ? { ...prev, dailyFocusGoalMinutes: newGoalMinutes } : prev));
+  };
+
   if (loading) {
     return (
       <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
         <div style={{
           width: '40px',
           height: '40px',
-          border: '3px solid #334155',
-          borderTopColor: '#6366f1',
+          border: '3px solid var(--border)',
+          borderTopColor: 'var(--accent-primary)',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
           margin: '0 auto 16px',
@@ -112,6 +128,13 @@ export const Dashboard: React.FC = () => {
       </div>
     );
   }
+
+  const goalMinutes = data.dailyFocusGoalMinutes || 120;
+  const goalSeconds = goalMinutes * 60;
+  const isGoalReached = data.todayFocusSeconds >= goalSeconds;
+  const overMinutes = Math.floor((data.todayFocusSeconds - goalSeconds) / 60);
+  const remainingMinutes = Math.max(0, Math.round((goalSeconds - data.todayFocusSeconds) / 60));
+  const progressPercent = Math.min(100, Math.round((data.todayFocusSeconds / goalSeconds) * 100));
 
   return (
     <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
@@ -158,7 +181,7 @@ export const Dashboard: React.FC = () => {
           </button>
           <button
             onClick={() => navigate('/focus')}
-            className="btn btn-lime"
+            className="btn btn-primary"
             style={{ padding: '11px 24px' }}
           >
             <Play size={15} fill="currentColor" />
@@ -178,8 +201,9 @@ export const Dashboard: React.FC = () => {
         <div style={{
           gridColumn: 'span 1',
           minWidth: '320px',
-          backgroundColor: 'var(--surface-mint)',
+          backgroundColor: 'var(--surface-sage)',
           borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border)',
           padding: '36px 36px 32px',
           display: 'flex',
           flexDirection: 'column',
@@ -200,7 +224,7 @@ export const Dashboard: React.FC = () => {
                 gap: '8px',
                 padding: '6px 12px',
                 borderRadius: 'var(--radius-pill)',
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                backgroundColor: 'rgba(251, 249, 243, 0.85)',
                 fontSize: '12px',
                 fontWeight: 600,
                 color: 'var(--text-primary)',
@@ -208,9 +232,35 @@ export const Dashboard: React.FC = () => {
                 <Clock size={13} />
                 <span>TODAY'S FOCUS TIME</span>
               </div>
-              <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                Goal: 2h 00m
-              </span>
+              <button
+                type="button"
+                onClick={() => setIsGoalModalOpen(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(251, 249, 243, 0.85)',
+                  border: '1px solid var(--border-strong)',
+                  borderRadius: 'var(--radius-pill)',
+                  padding: '4px 10px',
+                  fontSize: '12px',
+                  color: 'var(--text-primary)',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--surface)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(251, 249, 243, 0.85)';
+                }}
+                title="Edit Daily Focus Goal"
+                aria-label="Edit Daily Focus Goal"
+              >
+                <span>Goal: {formatGoal(goalMinutes)}</span>
+                <Pencil size={11} />
+              </button>
             </div>
 
             <div className="metric-giant" style={{ marginBottom: '12px' }}>
@@ -218,24 +268,26 @@ export const Dashboard: React.FC = () => {
             </div>
 
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-              {data.todayFocusSeconds >= 7200
-                ? '✦ Daily target achieved! Fantastic concentration today.'
-                : `${Math.max(0, Math.round((7200 - data.todayFocusSeconds) / 60))} minutes remaining to hit your 2-hour daily benchmark.`}
+              {isGoalReached
+                ? overMinutes > 0
+                  ? `Goal reached — ${overMinutes} ${overMinutes === 1 ? 'minute' : 'minutes'} over`
+                  : '✦ Daily target achieved! Fantastic concentration today.'
+                : `${remainingMinutes} minutes remaining to hit your ${formatGoal(goalMinutes)} daily benchmark.`}
             </p>
 
             {/* Benchmark Progress Bar */}
             <div style={{
               width: '100%',
               height: '8px',
-              backgroundColor: 'rgba(17, 17, 17, 0.08)',
+              backgroundColor: 'rgba(52, 59, 47, 0.12)',
               borderRadius: 'var(--radius-pill)',
               overflow: 'hidden',
               marginBottom: '32px',
             }}>
               <div style={{
                 height: '100%',
-                width: `${Math.min(100, Math.round((data.todayFocusSeconds / 7200) * 100))}%`,
-                backgroundColor: 'var(--text-primary)',
+                width: `${progressPercent}%`,
+                backgroundColor: 'var(--accent-primary)',
                 borderRadius: 'var(--radius-pill)',
                 transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
               }} />
@@ -244,7 +296,7 @@ export const Dashboard: React.FC = () => {
 
           <button
             onClick={() => navigate('/focus')}
-            className="btn btn-lime"
+            className="btn btn-primary"
             style={{
               width: '100%',
               padding: '14px 24px',
@@ -262,117 +314,42 @@ export const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        {/* Secondary Column: Productivity Score + Task Progress */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Card A: Productivity Score */}
-          <div style={{
-            backgroundColor: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '28px',
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            boxShadow: 'var(--shadow-card)',
-            position: 'relative',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-              <div>
-                <span className="text-meta" style={{ textTransform: 'uppercase' }}>PRODUCTIVITY SCORE</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                  <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Rule-based Evaluation
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setShowFormulaInfo(!showFormulaInfo)}
-                    style={{ background: 'none', color: 'var(--text-muted)', padding: '2px' }}
-                    title="View deterministic formula"
-                  >
-                    <HelpCircle size={15} />
-                  </button>
-                </div>
-              </div>
-
-              <span className="badge" style={{
-                backgroundColor: data.productivityScore >= 70 ? 'var(--surface-mint)' : data.productivityScore >= 40 ? '#FCEFD8' : 'var(--bg-secondary)',
-                color: data.productivityScore >= 70 ? '#1F4C27' : data.productivityScore >= 40 ? '#8C5914' : 'var(--text-secondary)',
-              }}>
-                {data.productivityScore >= 70 ? 'OPTIMAL' : data.productivityScore >= 40 ? 'CONSISTENT' : 'STARTING'}
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0' }}>
-              <span style={{ fontSize: '52px', fontWeight: 600, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>
-                {data.productivityScore}
-              </span>
-              <span style={{ fontSize: '18px', color: 'var(--text-muted)', fontWeight: 500 }}>/ 100</span>
-            </div>
-
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-              Weighted synthesis of completion rate (40%), 7-day consistency (30%), and today's focus benchmark (30%).
-            </p>
-
-            {/* Formula Info Popover */}
-            {showFormulaInfo && (
-              <div style={{
-                position: 'absolute',
-                top: '70px',
-                right: '24px',
-                zIndex: 30,
-                backgroundColor: 'var(--surface)',
-                border: '1px solid var(--border-strong)',
-                borderRadius: 'var(--radius-md)',
-                padding: '16px',
-                boxShadow: 'var(--shadow-float)',
-                fontSize: '12px',
-                color: 'var(--text-secondary)',
-                maxWidth: '280px',
-                lineHeight: '1.6',
-              }}>
-                <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
-                  Deterministic Score Formula:
-                </div>
-                <div>• <strong>40%</strong> Task Completion Ratio</div>
-                <div>• <strong>30%</strong> 7-Day Active Study Days</div>
-                <div>• <strong>30%</strong> Focus Target (up to 2h)</div>
-                <button
-                  onClick={() => setShowFormulaInfo(false)}
-                  style={{ marginTop: '10px', fontSize: '11px', color: 'var(--text-primary)', fontWeight: 600, textDecoration: 'underline', background: 'none' }}
-                >
-                  Close details
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Card B: Task Completion Momentum */}
-          <div style={{
-            backgroundColor: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '28px',
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            boxShadow: 'var(--shadow-card)',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <span className="text-meta" style={{ textTransform: 'uppercase' }}>STUDY TASKS STATUS</span>
-                <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '4px' }}>
-                  {data.completedTasks} completed <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 400 }}>of {data.totalTasks} total</span>
-                </div>
-              </div>
+        {/* Compact Companion Card: Study Tasks Status */}
+        <div style={{
+          backgroundColor: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '36px 32px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          boxShadow: 'var(--shadow-card)',
+        }}>
+          <div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '24px',
+            }}>
+              <span className="text-meta" style={{ textTransform: 'uppercase' }}>STUDY TASKS STATUS</span>
               <span className="badge" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                 {data.pendingTasks} pending
               </span>
             </div>
 
-            <div style={{ marginTop: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+            <div style={{ fontSize: '32px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: '8px' }}>
+              {data.completedTasks} completed
+            </div>
+
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+              {data.totalTasks > 0
+                ? `${data.completedTasks} of ${data.totalTasks} total coursework tasks completed.`
+                : 'No tasks scheduled yet for your courses.'}
+            </p>
+
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
                 <span>Completion progress</span>
                 <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{data.taskCompletionRate}%</span>
               </div>
@@ -386,19 +363,153 @@ export const Dashboard: React.FC = () => {
                 <div style={{
                   height: '100%',
                   width: `${data.taskCompletionRate}%`,
-                  backgroundColor: 'var(--surface-green)',
+                  backgroundColor: 'var(--accent-primary)',
                   borderRadius: 'var(--radius-pill)',
                   transition: 'width 0.5s ease',
                 }} />
               </div>
             </div>
           </div>
+
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: '20px',
+            borderTop: '1px solid var(--border)',
+          }}>
+            <Link
+              to="/tasks"
+              style={{
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span>Manage Coursework Tasks</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Weekly Focus Rhythm Chart */}
-      <div style={{ marginBottom: '36px' }}>
+      <div style={{ marginBottom: '28px' }}>
         <WeeklyBarChart data={data.weeklyFocus} />
+      </div>
+
+      {/* Study Distribution by Subject */}
+      <div style={{
+        backgroundColor: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '28px',
+        boxShadow: 'var(--shadow-card)',
+        marginBottom: '28px',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Layers size={18} style={{ color: 'var(--text-secondary)' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>
+                Study Distribution by Subject
+              </h3>
+            </div>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Academic focus volume and task distribution across your enrolled subjects
+            </p>
+          </div>
+          <Link
+            to="/subjects"
+            style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}
+          >
+            <span>Manage Subjects</span>
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        {(!data.subjectAnalytics ||
+          data.subjectAnalytics.length === 0 ||
+          data.subjectAnalytics.every((s) => s.focusSeconds === 0 && s.totalTasks === 0)) ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '36px 20px',
+            backgroundColor: 'var(--bg-secondary)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px dashed var(--border)',
+            color: 'var(--text-secondary)',
+          }}>
+            <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+              No study data yet
+            </h4>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+              Create a subject and start a focus session to see your study distribution.
+            </p>
+            <Link to="/subjects" className="btn btn-outline" style={{ display: 'inline-flex', padding: '8px 18px', fontSize: '12px' }}>
+              <span>Go to Subjects</span>
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {data.subjectAnalytics.map((stat) => {
+              const barColor = stat.color || '#94a3b8';
+              return (
+                <div key={stat.subjectId || stat.subjectName} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {/* Top row: Subject name with color dot, and stats on the right */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        backgroundColor: barColor,
+                        flexShrink: 0,
+                      }} />
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {stat.subjectName}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {formatSeconds(stat.focusSeconds)}
+                      </span>
+                      <span style={{ color: 'var(--text-muted)', fontWeight: 500, minWidth: '36px', textAlign: 'right' }}>
+                        {stat.focusPercentage}%
+                      </span>
+                      {stat.totalTasks > 0 && (
+                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                          {stat.completedTasks}/{stat.totalTasks} tasks
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Visual colored bar matching subject color */}
+                  <div style={{
+                    width: '100%',
+                    height: '10px',
+                    backgroundColor: 'var(--bg-secondary)',
+                    borderRadius: 'var(--radius-pill)',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${Math.min(100, Math.max(0, stat.focusPercentage))}%`,
+                      backgroundColor: barColor,
+                      borderRadius: 'var(--radius-pill)',
+                      transition: 'width 0.4s ease',
+                    }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Two Column Layout: Active Tasks & Recent Focus History */}
@@ -474,13 +585,13 @@ export const Dashboard: React.FC = () => {
                         aria-label={isCompleted ? 'Mark pending' : 'Mark completed'}
                         style={{
                           background: 'none',
-                          color: isCompleted ? '#1F4C27' : 'var(--text-muted)',
+                          color: isCompleted ? 'var(--accent-primary)' : 'var(--text-muted)',
                           padding: '2px',
                           display: 'flex',
                           alignItems: 'center',
                         }}
                       >
-                        {isCompleted ? <CheckCircle2 size={19} color="#1F4C27" /> : <Circle size={19} />}
+                        {isCompleted ? <CheckCircle2 size={19} color="var(--accent-primary)" /> : <Circle size={19} />}
                       </button>
                       <div style={{ overflow: 'hidden' }}>
                         <div style={{
@@ -540,6 +651,13 @@ export const Dashboard: React.FC = () => {
           />
         </div>
       </div>
+
+      <DailyGoalModal
+        isOpen={isGoalModalOpen}
+        currentGoalMinutes={data.dailyFocusGoalMinutes || 120}
+        onClose={() => setIsGoalModalOpen(false)}
+        onSave={handleSaveGoal}
+      />
     </div>
   );
 };

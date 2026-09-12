@@ -12,6 +12,7 @@ public class TaskResponse {
     private String userId;
     private String title;
     private String description;
+    private String subjectId;
     private String subject;
     private Priority priority;
     private TaskStatus status;
@@ -28,6 +29,22 @@ public class TaskResponse {
         this.userId = userId;
         this.title = title;
         this.description = description;
+        this.subjectId = null;
+        this.subject = subject;
+        this.priority = priority;
+        this.status = status;
+        this.dueDate = dueDate;
+        this.createdAt = createdAt;
+        this.completedAt = completedAt;
+    }
+
+    public TaskResponse(String id, String userId, String title, String description, String subjectId, String subject,
+                        Priority priority, TaskStatus status, Instant dueDate, Instant createdAt, Instant completedAt) {
+        this.id = id;
+        this.userId = userId;
+        this.title = title;
+        this.description = description;
+        this.subjectId = subjectId;
         this.subject = subject;
         this.priority = priority;
         this.status = status;
@@ -42,6 +59,7 @@ public class TaskResponse {
                 task.getUserId(),
                 task.getTitle(),
                 task.getDescription(),
+                task.getSubjectId(),
                 task.getSubject(),
                 task.getPriority(),
                 task.getStatus(),
@@ -81,6 +99,14 @@ public class TaskResponse {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getSubject() {

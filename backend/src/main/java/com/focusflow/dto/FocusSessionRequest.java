@@ -1,7 +1,7 @@
 package com.focusflow.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -9,8 +9,9 @@ import java.time.Instant;
 
 public class FocusSessionRequest {
 
-    @NotBlank(message = "Subject is required")
-    @Size(min = 2, max = 50, message = "Subject must be between 2 and 50 characters")
+    private String subjectId;
+
+    @Size(max = 50, message = "Subject must not exceed 50 characters")
     private String subject;
 
     @NotNull(message = "Duration is required")
@@ -25,6 +26,12 @@ public class FocusSessionRequest {
 
     private boolean completed = true;
 
+    @AssertTrue(message = "Subject is required")
+    public boolean isSubject() {
+        return (subjectId != null && !subjectId.trim().isEmpty()) ||
+               (subject != null && !subject.trim().isEmpty());
+    }
+
     public FocusSessionRequest() {
     }
 
@@ -34,6 +41,23 @@ public class FocusSessionRequest {
         this.startedAt = startedAt;
         this.endedAt = endedAt;
         this.completed = completed;
+    }
+
+    public FocusSessionRequest(String subjectId, String subject, Long duration, Instant startedAt, Instant endedAt, boolean completed) {
+        this.subjectId = subjectId;
+        this.subject = subject;
+        this.duration = duration;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.completed = completed;
+    }
+
+    public String getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getSubject() {

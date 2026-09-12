@@ -4,10 +4,12 @@ import com.focusflow.dto.DashboardResponse;
 import com.focusflow.dto.FocusSessionResponse;
 import com.focusflow.dto.TaskResponse;
 import com.focusflow.model.FocusSession;
+import com.focusflow.model.Subject;
 import com.focusflow.model.Task;
 import com.focusflow.model.TaskStatus;
 import com.focusflow.model.User;
 import com.focusflow.repository.FocusSessionRepository;
+import com.focusflow.repository.SubjectRepository;
 import com.focusflow.repository.TaskRepository;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
@@ -15,14 +17,13 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
  * Dashboard Service.
- * Aggregates statistics from tasks and focus_sessions collections for the authenticated user.
+ * Aggregates statistics from tasks, focus_sessions, and subjects collections for the authenticated user.
  *
  * Demonstrates Unit 3 Multithreading:
  * Executes task metrics computation and focus session analysis concurrently using
@@ -33,13 +34,16 @@ public class DashboardService {
 
     private final TaskRepository taskRepository;
     private final FocusSessionRepository focusSessionRepository;
+    private final SubjectRepository subjectRepository;
     private final TaskExecutor taskExecutor;
 
     public DashboardService(TaskRepository taskRepository,
                             FocusSessionRepository focusSessionRepository,
+                            SubjectRepository subjectRepository,
                             TaskExecutor taskExecutor) {
         this.taskRepository = taskRepository;
         this.focusSessionRepository = focusSessionRepository;
+        this.subjectRepository = subjectRepository;
         this.taskExecutor = taskExecutor;
     }
 
@@ -59,7 +63,7 @@ public class DashboardService {
                     .map(TaskResponse::fromEntity)
                     .collect(Collectors.toList());
 
-            return new TaskMetrics(total, completed, pending, rate, recentTasks);
+            return new TaskMetrics(total, completed, pending, rate, recentTasks, allTasks);
         }, taskExecutor);
 
         // 2. Asynchronous task: Retrieve and calculate Focus Session metrics
@@ -107,7 +111,7 @@ public class DashboardService {
             }
 
             int activeDaysCount = activeDays.size();
-            return new FocusMetrics(todaySeconds, recentSessions, weeklyList, activeDaysCount);
+            return new FocusMetrics(todaySeconds, recentSessions, weeklyList, activeDaysCount, allSessions);
         }, taskExecutor);
 
         // 3. Combine both asynchronous computations
@@ -116,15 +120,25 @@ public class DashboardService {
         TaskMetrics taskMetrics = taskFuture.join();
         FocusMetrics focusMetrics = focusFuture.join();
 
+        int goalMinutes = currentUser.getDailyFocusGoalMinutes() != null ? currentUser.getDailyFocusGoalMinutes() : 120;
+
         // 4. Calculate Rule-Based Productivity Score
         int score = calculateProductivityScore(
                 taskMetrics.total,
                 taskMetrics.completed,
                 focusMetrics.todaySeconds,
-                focusMetrics.activeDaysLast7Days
+                focusMetrics.activeDaysLast7Days,
+                goalMinutes
         );
 
-        return new DashboardResponse(
+        // 5. Calculate Subject Distribution Analytics
+        List<DashboardResponse.SubjectStat> subjectAnalytics = calculateSubjectAnalytics(
+                userId,
+                taskMetrics.allTasks,
+                focusMetrics.allSessions
+        );
+
+        DashboardResponse response = new DashboardResponse(
                 focusMetrics.todaySeconds,
                 taskMetrics.total,
                 taskMetrics.completed,
@@ -133,54 +147,169 @@ public class DashboardService {
                 score,
                 focusMetrics.weeklyFocus,
                 taskMetrics.recentTasks,
-                focusMetrics.recentSessions
+                focusMetrics.recentSessions,
+                subjectAnalytics
         );
+        response.setDailyFocusGoalMinutes(goalMinutes);
+        return response;
     }
 
-    /**
-     * Deterministic Rule-Based Productivity Score Calculation:
-     *
-     * Weights:
-     * - Task Completion Rate: 40%
-     * - Focus Consistency (active days out of 7): 30%
-     * - Daily Focus Goal (2 hours = 7200 seconds): 30%
-     *
-     * Clamped: [0, 100]
-     */
+    private List<DashboardResponse.SubjectStat> calculateSubjectAnalytics(
+            String userId, List<Task> tasks, List<FocusSession> sessions) {
+
+        List<Subject> userSubjects = subjectRepository.findByUserIdOrderByNameAsc(userId);
+        long totalAllFocusSeconds = sessions.stream().mapToLong(FocusSession::getDuration).sum();
+
+        Map<String, DashboardResponse.SubjectStat> statMap = new LinkedHashMap<>();
+
+        // Initialize with registered subjects
+        for (Subject sub : userSubjects) {
+            statMap.put(sub.getId(), new DashboardResponse.SubjectStat(
+                    sub.getId(),
+                    sub.getName(),
+                    sub.getColor() != null ? sub.getColor() : "#DDEBDF",
+                    0L,
+                    0,
+                    0.0,
+                    0L,
+                    0L,
+                    0L
+            ));
+        }
+
+        // Map focus sessions
+        for (FocusSession session : sessions) {
+            String subId = session.getSubjectId();
+            DashboardResponse.SubjectStat stat = null;
+            if (subId != null && statMap.containsKey(subId)) {
+                stat = statMap.get(subId);
+            } else if (session.getSubject() != null && !session.getSubject().trim().isEmpty()) {
+                String name = session.getSubject().trim();
+                for (DashboardResponse.SubjectStat s : statMap.values()) {
+                    if (s.getSubjectName().equalsIgnoreCase(name)) {
+                        stat = s;
+                        break;
+                    }
+                }
+                if (stat == null) {
+                    stat = statMap.computeIfAbsent("legacy_" + name.toLowerCase(), k -> new DashboardResponse.SubjectStat(
+                            null,
+                            name,
+                            "#DDEBDF",
+                            0L,
+                            0,
+                            0.0,
+                            0L,
+                            0L,
+                            0L
+                    ));
+                }
+            }
+
+            if (stat != null) {
+                stat.setFocusSeconds(stat.getFocusSeconds() + session.getDuration());
+            }
+        }
+
+        // Map tasks
+        for (Task task : tasks) {
+            String subId = task.getSubjectId();
+            DashboardResponse.SubjectStat stat = null;
+            if (subId != null && statMap.containsKey(subId)) {
+                stat = statMap.get(subId);
+            } else if (task.getSubject() != null && !task.getSubject().trim().isEmpty()) {
+                String name = task.getSubject().trim();
+                for (DashboardResponse.SubjectStat s : statMap.values()) {
+                    if (s.getSubjectName().equalsIgnoreCase(name)) {
+                        stat = s;
+                        break;
+                    }
+                }
+                if (stat == null) {
+                    stat = statMap.computeIfAbsent("legacy_" + name.toLowerCase(), k -> new DashboardResponse.SubjectStat(
+                            null,
+                            name,
+                            "#DDEBDF",
+                            0L,
+                            0,
+                            0.0,
+                            0L,
+                            0L,
+                            0L
+                    ));
+                }
+            }
+
+            if (stat != null) {
+                stat.setTotalTasks(stat.getTotalTasks() + 1);
+                if (task.getStatus() == TaskStatus.COMPLETED) {
+                    stat.setCompletedTasks(stat.getCompletedTasks() + 1);
+                } else {
+                    stat.setPendingTasks(stat.getPendingTasks() + 1);
+                }
+            }
+        }
+
+        // Calculate rounded minutes, percentages, and sort
+        List<DashboardResponse.SubjectStat> result = new ArrayList<>();
+        for (DashboardResponse.SubjectStat stat : statMap.values()) {
+            stat.setFocusMinutes((int) Math.round((double) stat.getFocusSeconds() / 60.0));
+            double pct = totalAllFocusSeconds > 0
+                    ? ((double) stat.getFocusSeconds() / totalAllFocusSeconds) * 100.0
+                    : 0.0;
+            stat.setFocusPercentage(Math.round(pct * 10.0) / 10.0);
+
+            if (stat.getSubjectId() != null || stat.getFocusSeconds() > 0 || stat.getTotalTasks() > 0) {
+                result.add(stat);
+            }
+        }
+
+        result.sort((a, b) -> {
+            int cmp = Long.compare(b.getFocusSeconds(), a.getFocusSeconds());
+            if (cmp != 0) return cmp;
+            return Long.compare(b.getTotalTasks(), a.getTotalTasks());
+        });
+
+        return result;
+    }
+
     public int calculateProductivityScore(long totalTasks, long completedTasks,
                                          long todayFocusSeconds, int activeDaysLast7Days) {
+        return calculateProductivityScore(totalTasks, completedTasks, todayFocusSeconds, activeDaysLast7Days, 120);
+    }
+
+    public int calculateProductivityScore(long totalTasks, long completedTasks,
+                                         long todayFocusSeconds, int activeDaysLast7Days,
+                                         int goalMinutes) {
         if (totalTasks == 0 && todayFocusSeconds == 0 && activeDaysLast7Days == 0) {
             return 0;
         }
 
-        // 1. Task factor: 0.0 to 1.0 (40 points)
         double taskFactor = totalTasks > 0 ? (double) completedTasks / totalTasks : 0.0;
-
-        // 2. Consistency factor: 0.0 to 1.0 (30 points)
         double consistencyFactor = Math.min(1.0, (double) activeDaysLast7Days / 7.0);
-
-        // 3. Focus time factor: normalized to 7200s (2 hours) (30 points)
-        double targetSeconds = 7200.0;
+        double targetSeconds = (goalMinutes > 0 ? goalMinutes : 120) * 60.0;
         double focusTimeFactor = Math.min(1.0, (double) todayFocusSeconds / targetSeconds);
 
         double totalScore = (taskFactor * 40.0) + (consistencyFactor * 30.0) + (focusTimeFactor * 30.0);
         return (int) Math.max(0, Math.min(100, Math.round(totalScore)));
     }
 
-    // Helper data holders for combining async futures
     private static class TaskMetrics {
         final long total;
         final long completed;
         final long pending;
         final double completionRate;
         final List<TaskResponse> recentTasks;
+        final List<Task> allTasks;
 
-        TaskMetrics(long total, long completed, long pending, double completionRate, List<TaskResponse> recentTasks) {
+        TaskMetrics(long total, long completed, long pending, double completionRate,
+                    List<TaskResponse> recentTasks, List<Task> allTasks) {
             this.total = total;
             this.completed = completed;
             this.pending = pending;
             this.completionRate = completionRate;
             this.recentTasks = recentTasks;
+            this.allTasks = allTasks;
         }
     }
 
@@ -189,13 +318,16 @@ public class DashboardService {
         final List<FocusSessionResponse> recentSessions;
         final List<DashboardResponse.DailyFocusStat> weeklyFocus;
         final int activeDaysLast7Days;
+        final List<FocusSession> allSessions;
 
         FocusMetrics(long todaySeconds, List<FocusSessionResponse> recentSessions,
-                     List<DashboardResponse.DailyFocusStat> weeklyFocus, int activeDaysLast7Days) {
+                     List<DashboardResponse.DailyFocusStat> weeklyFocus, int activeDaysLast7Days,
+                     List<FocusSession> allSessions) {
             this.todaySeconds = todaySeconds;
             this.recentSessions = recentSessions;
             this.weeklyFocus = weeklyFocus;
             this.activeDaysLast7Days = activeDaysLast7Days;
+            this.allSessions = allSessions;
         }
     }
 }

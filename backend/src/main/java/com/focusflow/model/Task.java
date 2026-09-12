@@ -26,6 +26,8 @@ public class Task {
 
     private String description;
 
+    private String subjectId;
+
     private String subject;
 
     private Priority priority = Priority.MEDIUM;
@@ -84,6 +86,14 @@ public class Task {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getSubject() {

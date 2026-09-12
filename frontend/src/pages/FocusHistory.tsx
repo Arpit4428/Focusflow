@@ -146,8 +146,8 @@ export const FocusHistory: React.FC = () => {
           <div style={{
             width: '36px',
             height: '36px',
-            border: '3px solid var(--border-strong)',
-            borderTopColor: 'var(--text-primary)',
+            border: '3px solid var(--border)',
+            borderTopColor: 'var(--accent-primary)',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
             margin: '0 auto 16px',

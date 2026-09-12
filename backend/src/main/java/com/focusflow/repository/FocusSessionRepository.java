@@ -19,9 +19,13 @@ public interface FocusSessionRepository extends MongoRepository<FocusSession, St
 
     List<FocusSession> findByUserIdAndSubjectOrderByStartedAtDesc(String userId, String subject);
 
+    List<FocusSession> findByUserIdAndSubjectIdOrderByStartedAtDesc(String userId, String subjectId);
+
     List<FocusSession> findByUserIdAndStartedAtBetweenOrderByStartedAtDesc(String userId, Instant start, Instant end);
 
     Optional<FocusSession> findByIdAndUserId(String id, String userId);
+
+    boolean existsBySubjectIdAndUserId(String subjectId, String userId);
 
     void deleteByIdAndUserId(String id, String userId);
 }

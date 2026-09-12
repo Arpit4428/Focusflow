@@ -4,9 +4,11 @@ import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard,
   CheckSquare,
+  BookOpen,
   Timer,
   History,
   BarChart3,
+  Calendar as CalendarIcon,
   LogOut,
   Menu,
   X,
@@ -28,7 +30,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/calendar', label: 'Calendar', icon: CalendarIcon },
     { to: '/tasks', label: 'Tasks', icon: CheckSquare },
+    { to: '/subjects', label: 'Subjects', icon: BookOpen },
     { to: '/focus', label: 'Focus Timer', icon: Timer },
     { to: '/history', label: 'Focus History', icon: History },
     { to: '/insights', label: 'Insights', icon: BarChart3 },
@@ -43,7 +47,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         left: 0,
         right: 0,
         height: '60px',
-        backgroundColor: 'var(--bg-secondary)',
+        backgroundColor: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         padding: '0 20px',
         alignItems: 'center',
@@ -55,8 +59,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             width: '26px',
             height: '26px',
             borderRadius: '6px',
-            backgroundColor: 'var(--accent-lime)',
-            color: '#111111',
+            backgroundColor: 'var(--accent-primary)',
+            color: 'var(--text-on-accent)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -90,7 +94,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* Sidebar Navigation */}
       <aside className={`app-sidebar ${mobileMenuOpen ? 'open' : ''}`} style={{
         width: '240px',
-        backgroundColor: 'var(--bg-secondary)',
+        backgroundColor: 'var(--surface)',
         borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
@@ -107,14 +111,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             width: '28px',
             height: '28px',
             borderRadius: '8px',
-            backgroundColor: 'var(--accent-lime)',
-            color: '#111111',
+            backgroundColor: 'var(--accent-primary)',
+            color: 'var(--text-on-accent)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontWeight: 800,
             fontSize: '13px',
-            boxShadow: '0 2px 8px rgba(231, 255, 99, 0.45)',
+            boxShadow: '0 2px 8px rgba(82, 99, 77, 0.25)',
           }}>
             ✦
           </div>
@@ -122,9 +126,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             <div style={{ fontWeight: 700, fontSize: '18px', letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>
               FocusFlow
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
-              Study &amp; Focus Studio
-            </div>
+            
           </div>
         </div>
 
@@ -146,7 +148,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   fontSize: '14px',
                   fontWeight: isActive ? 600 : 500,
                   color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  backgroundColor: isActive ? 'var(--surface-mint)' : 'transparent',
+                  backgroundColor: isActive ? 'var(--surface-sage)' : 'transparent',
                   transition: 'var(--transition)',
                 })}
               >
@@ -160,7 +162,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         width: '6px',
                         height: '6px',
                         borderRadius: '50%',
-                        backgroundColor: 'var(--text-primary)',
+                        backgroundColor: 'var(--accent-mustard)',
                       }} />
                     )}
                   </>
@@ -175,7 +177,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           padding: '16px',
           margin: '12px',
           borderRadius: 'var(--radius-md)',
-          backgroundColor: 'var(--surface)',
+          backgroundColor: 'var(--bg-primary)',
           border: '1px solid var(--border)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
@@ -183,7 +185,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               width: '32px',
               height: '32px',
               borderRadius: '50%',
-              backgroundColor: 'var(--surface-mint)',
+              backgroundColor: 'var(--surface-sage)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -213,7 +215,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               gap: '6px',
               backgroundColor: 'transparent',
               color: 'var(--text-secondary)',
-              border: '1px solid var(--border)',
+              border: '1px solid var(--border-strong)',
               padding: '6px',
               borderRadius: 'var(--radius-pill)',
               fontSize: '12px',

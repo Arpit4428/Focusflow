@@ -8,6 +8,7 @@ public class FocusSessionResponse {
 
     private String id;
     private String userId;
+    private String subjectId;
     private String subject;
     private long duration; // in seconds
     private Instant startedAt;
@@ -21,6 +22,19 @@ public class FocusSessionResponse {
                                 Instant startedAt, Instant endedAt, boolean completed) {
         this.id = id;
         this.userId = userId;
+        this.subjectId = null;
+        this.subject = subject;
+        this.duration = duration;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.completed = completed;
+    }
+
+    public FocusSessionResponse(String id, String userId, String subjectId, String subject, long duration,
+                                Instant startedAt, Instant endedAt, boolean completed) {
+        this.id = id;
+        this.userId = userId;
+        this.subjectId = subjectId;
         this.subject = subject;
         this.duration = duration;
         this.startedAt = startedAt;
@@ -32,6 +46,7 @@ public class FocusSessionResponse {
         return new FocusSessionResponse(
                 session.getId(),
                 session.getUserId(),
+                session.getSubjectId(),
                 session.getSubject(),
                 session.getDuration(),
                 session.getStartedAt(),
@@ -54,6 +69,14 @@ public class FocusSessionResponse {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getSubject() {

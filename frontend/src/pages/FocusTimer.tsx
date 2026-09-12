@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useTimer } from '../hooks/useTimer';
 import { sessionService } from '../services/sessionService';
-import { taskService } from '../services/taskService';
+import { subjectService } from '../services/subjectService';
 import { FocusHistoryList } from '../components/focus/FocusHistoryList';
 import type { FocusSession } from '../types/session';
+import type { Subject } from '../types/subject';
 import type { ApiError } from '../types/auth';
 import {
   Play,
@@ -14,47 +16,48 @@ import {
   CheckCircle,
   AlertCircle,
   Flame,
+  Plus,
 } from 'lucide-react';
 
 export const FocusTimer: React.FC = () => {
   const { status, formattedTime, start, pause, resume, stop, reset } = useTimer();
 
-  const [subject, setSubject] = useState('');
-  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+  const [selectedSubjectName, setSelectedSubjectName] = useState<string>('');
   const [recentSessions, setRecentSessions] = useState<FocusSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'warning' | 'error'; text: string } | null>(null);
 
-  // Fetch subjects from existing tasks and recent sessions
+  // Fetch subjects and recent sessions
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [sessions, tasks] = await Promise.all([
+      const [sessions, subs] = await Promise.all([
         sessionService.getSessions(),
-        taskService.getTasks(),
+        subjectService.getSubjects(),
       ]);
 
       setRecentSessions(sessions);
+      setSubjects(subs);
 
-      // Extract unique subject names
-      const subjectsFromTasks = tasks.map((t) => t.subject);
-      const subjectsFromSessions = sessions.map((s) => s.subject);
-      const combined: string[] = Array.from(new Set([...subjectsFromTasks, ...subjectsFromSessions])).filter(Boolean);
-
-      if (combined.length > 0) {
-        setAvailableSubjects(combined);
-        setSubject((prev) => prev || combined[0]);
-      } else {
-        setSubject((prev) => prev || 'General Study');
+      if (subs.length > 0) {
+        setSelectedSubjectId((prev) => {
+          if (prev && subs.some((s) => s.id === prev)) return prev;
+          return subs[0].id;
+        });
+        setSelectedSubjectName((prev) => {
+          const matched = subs.find((s) => s.id === (selectedSubjectId || subs[0].id));
+          return matched ? matched.name : (prev || subs[0].name);
+        });
       }
     } catch {
-      // Fallback
-      setSubject((prev) => prev || 'General Study');
+      // Non-blocking
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [selectedSubjectId]);
 
   useEffect(() => {
     loadData();
@@ -77,8 +80,8 @@ export const FocusTimer: React.FC = () => {
   };
 
   const handleStart = () => {
-    if (!subject.trim()) {
-      setFeedbackMessage({ type: 'warning', text: 'Please enter or select a study subject before starting.' });
+    if (!selectedSubjectId) {
+      setFeedbackMessage({ type: 'warning', text: 'Please create and select a study subject before starting.' });
       return;
     }
     setFeedbackMessage(null);
@@ -107,7 +110,8 @@ export const FocusTimer: React.FC = () => {
 
     try {
       const saved = await sessionService.createSession({
-        subject: subject.trim(),
+        subjectId: selectedSubjectId,
+        subject: selectedSubjectName,
         duration: sessionData.durationSeconds,
         startedAt: sessionData.startedAt,
         endedAt: sessionData.endedAt,
@@ -117,7 +121,7 @@ export const FocusTimer: React.FC = () => {
       setRecentSessions((prev) => [saved, ...prev]);
       setFeedbackMessage({
         type: 'success',
-        text: `Great work! Logged ${Math.floor(sessionData.durationSeconds / 60)}m ${sessionData.durationSeconds % 60}s of focused study for ${subject}.`,
+        text: `Great work! Logged ${Math.floor(sessionData.durationSeconds / 60)}m ${sessionData.durationSeconds % 60}s of focused study for ${selectedSubjectName}.`,
       });
       reset();
     } catch (err) {
@@ -144,20 +148,20 @@ export const FocusTimer: React.FC = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: 'var(--accent-lime)',
-            color: '#111111',
+            backgroundColor: 'var(--accent-mustard)',
+            color: 'var(--text-primary)',
             padding: '6px 14px',
             borderRadius: 'var(--radius-pill)',
             fontSize: '12px',
             fontWeight: 700,
             letterSpacing: '0.04em',
-            boxShadow: '0 2px 8px rgba(231, 255, 99, 0.4)',
+            boxShadow: '0 2px 8px rgba(214, 184, 90, 0.3)',
           }}>
             <span style={{
               width: '8px',
               height: '8px',
               borderRadius: '50%',
-              backgroundColor: '#111111',
+              backgroundColor: 'var(--text-primary)',
               animation: 'spin 2s linear infinite',
             }} />
             FOCUS SESSION ACTIVE
@@ -169,8 +173,9 @@ export const FocusTimer: React.FC = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            backgroundColor: '#FCEFD8',
-            color: '#8C5914',
+            backgroundColor: 'var(--accent-mustard-subtle)',
+            color: '#7A5F12',
+            border: '1px solid var(--accent-mustard-border)',
             padding: '6px 14px',
             borderRadius: 'var(--radius-pill)',
             fontSize: '12px',
@@ -187,7 +192,8 @@ export const FocusTimer: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             backgroundColor: 'var(--surface)',
-            color: '#1F4C27',
+            color: 'var(--accent-primary)',
+            border: '1px solid var(--border)',
             padding: '6px 14px',
             borderRadius: 'var(--radius-pill)',
             fontSize: '12px',
@@ -202,8 +208,9 @@ export const FocusTimer: React.FC = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            backgroundColor: 'rgba(251, 249, 243, 0.85)',
             color: 'var(--text-secondary)',
+            border: '1px solid var(--border)',
             padding: '6px 14px',
             borderRadius: 'var(--radius-pill)',
             fontSize: '12px',
@@ -253,9 +260,9 @@ export const FocusTimer: React.FC = () => {
               : 'alert-danger'
           }`}
           style={{
-            backgroundColor: feedbackMessage.type === 'warning' ? '#FCEFD8' : undefined,
-            color: feedbackMessage.type === 'warning' ? '#8C5914' : undefined,
-            border: feedbackMessage.type === 'warning' ? '1px solid rgba(245, 158, 11, 0.3)' : undefined,
+            backgroundColor: feedbackMessage.type === 'warning' ? 'var(--accent-mustard-subtle)' : undefined,
+            color: feedbackMessage.type === 'warning' ? '#7A5F12' : undefined,
+            border: feedbackMessage.type === 'warning' ? '1px solid var(--accent-mustard-border)' : undefined,
           }}
         >
           {feedbackMessage.type === 'success' ? (
@@ -275,8 +282,9 @@ export const FocusTimer: React.FC = () => {
 
       {/* Immersive Timer Studio Container */}
       <div style={{
-        backgroundColor: 'var(--surface-mint)',
+        backgroundColor: 'var(--surface-sage)',
         borderRadius: 'var(--radius-lg)',
+        border: '1px solid var(--border)',
         padding: '56px 40px 48px',
         textAlign: 'center',
         boxShadow: 'var(--shadow-card)',
@@ -293,7 +301,7 @@ export const FocusTimer: React.FC = () => {
             transform: 'translateX(-50%)',
             width: '380px',
             height: '240px',
-            background: 'radial-gradient(circle, rgba(231, 255, 99, 0.5) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(214, 184, 90, 0.35) 0%, transparent 70%)',
             filter: 'blur(30px)',
             pointerEvents: 'none',
           }} />
@@ -318,7 +326,7 @@ export const FocusTimer: React.FC = () => {
         </div>
 
         {/* Subject Selection / Active Indicator */}
-        <div style={{ maxWidth: '380px', margin: '0 auto 36px' }}>
+        <div style={{ maxWidth: '440px', margin: '0 auto 36px' }}>
           {status === 'RUNNING' || status === 'PAUSED' ? (
             <div style={{
               display: 'inline-flex',
@@ -326,57 +334,88 @@ export const FocusTimer: React.FC = () => {
               gap: '8px',
               padding: '8px 18px',
               borderRadius: 'var(--radius-pill)',
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              backgroundColor: 'rgba(251, 249, 243, 0.9)',
+              border: '1px solid var(--border-strong)',
               fontSize: '14px',
               fontWeight: 600,
               color: 'var(--text-primary)',
             }}>
+              <div style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                backgroundColor: subjects.find((s) => s.id === selectedSubjectId)?.color || '#D8E2D2',
+              }} />
               <span>Subject:</span>
-              <span style={{ color: '#111111', textDecoration: 'underline' }}>{subject}</span>
+              <span style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>{selectedSubjectName}</span>
+            </div>
+          ) : subjects.length === 0 ? (
+            <div style={{
+              backgroundColor: 'var(--surface)',
+              padding: '24px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px dashed var(--border)',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px', fontSize: '14px' }}>
+                No subjects yet.
+              </p>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
+                Create a subject before starting a focus session.
+              </p>
+              <Link
+                to="/subjects"
+                className="btn btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '8px 16px' }}
+              >
+                <Plus size={14} />
+                <span>Create Subject</span>
+              </Link>
             </div>
           ) : (
             <div>
-              <label style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: 600 }}>
-                Study Subject / Topic:
+              <label style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: 600 }}>
+                Select Study Subject:
               </label>
-              <input
-                type="text"
-                className="form-input"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="e.g. Algorithms &amp; Data Structures"
-                style={{
-                  textAlign: 'center',
-                  fontWeight: 600,
-                  fontSize: '15px',
-                  borderRadius: 'var(--radius-pill)',
-                  backgroundColor: 'var(--surface)',
-                }}
-              />
-
-              {availableSubjects.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px', justifyContent: 'center' }}>
-                  {availableSubjects.map((s) => (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+                {subjects.map((sub) => {
+                  const isSelected = sub.id === selectedSubjectId;
+                  return (
                     <button
-                      key={s}
+                      key={sub.id}
                       type="button"
-                      onClick={() => setSubject(s)}
+                      onClick={() => {
+                        setSelectedSubjectId(sub.id);
+                        setSelectedSubjectName(sub.name);
+                      }}
                       style={{
-                        fontSize: '12px',
-                        padding: '4px 12px',
+                        fontSize: '13px',
+                        padding: '8px 16px',
                         borderRadius: 'var(--radius-pill)',
-                        backgroundColor: subject === s ? 'var(--accent-lime)' : 'rgba(255, 255, 255, 0.7)',
+                        backgroundColor: isSelected ? 'var(--surface)' : 'rgba(251, 249, 243, 0.65)',
                         color: 'var(--text-primary)',
-                        fontWeight: subject === s ? 700 : 500,
-                        border: 'none',
+                        fontWeight: isSelected ? 700 : 500,
+                        border: isSelected ? '2px solid var(--accent-primary)' : '1px solid var(--border)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
                         transition: 'var(--transition)',
+                        boxShadow: isSelected ? 'var(--shadow-subtle)' : 'none',
                       }}
                     >
-                      {s}
+                      <div style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        backgroundColor: sub.color || '#D8E2D2',
+                        border: '1px solid rgba(0,0,0,0.1)',
+                      }} />
+                      <span>{sub.name}</span>
                     </button>
-                  ))}
-                </div>
-              )}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -386,11 +425,14 @@ export const FocusTimer: React.FC = () => {
           {status === 'IDLE' && (
             <button
               onClick={handleStart}
-              className="btn btn-lime"
+              className="btn btn-primary"
               style={{
                 padding: '16px 44px',
                 fontSize: '16px',
+                opacity: subjects.length === 0 ? 0.5 : 1,
+                cursor: subjects.length === 0 ? 'not-allowed' : 'pointer',
               }}
+              disabled={subjects.length === 0}
             >
               <Play size={18} fill="currentColor" />
               <span>Start Focus Session</span>
@@ -405,6 +447,7 @@ export const FocusTimer: React.FC = () => {
                 style={{
                   backgroundColor: 'var(--surface)',
                   color: 'var(--text-primary)',
+                  border: '1px solid var(--border-strong)',
                   padding: '14px 32px',
                   fontSize: '15px',
                 }}
@@ -428,7 +471,7 @@ export const FocusTimer: React.FC = () => {
             <>
               <button
                 onClick={resume}
-                className="btn btn-lime"
+                className="btn btn-primary"
                 style={{ padding: '14px 32px', fontSize: '15px' }}
               >
                 <Play size={18} fill="currentColor" />
@@ -441,7 +484,7 @@ export const FocusTimer: React.FC = () => {
                 disabled={isSaving}
               >
                 <Square size={16} fill="currentColor" />
-                <span>{isSaving ? 'Saving...' : 'End & Save'}</span>
+                <span>{isSaving ? 'Saving...' : 'End & Save Session'}</span>
               </button>
               <button
                 onClick={reset}

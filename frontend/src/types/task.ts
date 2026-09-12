@@ -7,6 +7,7 @@ export interface Task {
   userId: string;
   title: string;
   description?: string;
+  subjectId?: string;
   subject: string;
   priority: Priority;
   status: TaskStatus;
@@ -18,7 +19,8 @@ export interface Task {
 export interface TaskRequest {
   title: string;
   description?: string;
-  subject: string;
+  subjectId?: string;
+  subject?: string;
   priority: Priority;
   dueDate: string;
   status?: TaskStatus;

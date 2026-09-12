@@ -2,6 +2,7 @@ package com.focusflow.dto;
 
 import com.focusflow.model.Priority;
 import com.focusflow.model.TaskStatus;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,8 +18,9 @@ public class TaskRequest {
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
 
-    @NotBlank(message = "Subject is required")
-    @Size(min = 2, max = 50, message = "Subject must be between 2 and 50 characters")
+    private String subjectId;
+
+    @Size(max = 50, message = "Subject must not exceed 50 characters")
     private String subject;
 
     @NotNull(message = "Priority is required")
@@ -29,12 +31,27 @@ public class TaskRequest {
 
     private TaskStatus status;
 
+    @AssertTrue(message = "Subject is required")
+    public boolean isSubject() {
+        return (subjectId != null && !subjectId.trim().isEmpty()) ||
+               (subject != null && !subject.trim().isEmpty());
+    }
+
     public TaskRequest() {
     }
 
     public TaskRequest(String title, String description, String subject, Priority priority, Instant dueDate) {
         this.title = title;
         this.description = description;
+        this.subject = subject;
+        this.priority = priority;
+        this.dueDate = dueDate;
+    }
+
+    public TaskRequest(String title, String description, String subjectId, String subject, Priority priority, Instant dueDate) {
+        this.title = title;
+        this.description = description;
+        this.subjectId = subjectId;
         this.subject = subject;
         this.priority = priority;
         this.dueDate = dueDate;
@@ -54,6 +71,14 @@ public class TaskRequest {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getSubject() {

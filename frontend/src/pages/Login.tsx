@@ -60,7 +60,7 @@ export const Login: React.FC = () => {
       }}>
         {/* Left Hero / Brand Showcase */}
         <div style={{
-          backgroundColor: 'var(--surface-mint)',
+          backgroundColor: 'var(--surface-sage)',
           padding: '48px 40px',
           display: 'flex',
           flexDirection: 'column',
@@ -74,13 +74,13 @@ export const Login: React.FC = () => {
               gap: '8px',
               padding: '6px 12px',
               borderRadius: 'var(--radius-pill)',
-              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              backgroundColor: 'rgba(251, 249, 243, 0.85)',
               fontSize: '12px',
               fontWeight: 600,
               color: 'var(--text-primary)',
               marginBottom: '32px',
             }}>
-              <span style={{ color: '#111111' }}>✦</span>
+              <span style={{ color: 'var(--text-primary)' }}>✦</span>
               <span>Academic Focus Studio</span>
             </div>
 
@@ -115,8 +115,8 @@ export const Login: React.FC = () => {
               width: '12px',
               height: '12px',
               borderRadius: '50%',
-              backgroundColor: 'var(--accent-lime)',
-              boxShadow: '0 0 10px rgba(231, 255, 99, 0.8)',
+              backgroundColor: 'var(--accent-mustard)',
+              boxShadow: '0 0 6px rgba(214, 184, 90, 0.5)',
             }} />
             <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
               Stateless • Unit 3 Architecture • Clean Data
@@ -184,7 +184,7 @@ export const Login: React.FC = () => {
 
             <button
               type="submit"
-              className="btn btn-lime"
+              className="btn btn-primary"
               disabled={isSubmitting}
               style={{
                 width: '100%',
@@ -198,8 +198,8 @@ export const Login: React.FC = () => {
                   <div style={{
                     width: '16px',
                     height: '16px',
-                    border: '2px solid rgba(17,17,17,0.2)',
-                    borderTopColor: '#111111',
+                    border: '2px solid rgba(251,249,243,0.3)',
+                    borderTopColor: '#FBF9F3',
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }} />

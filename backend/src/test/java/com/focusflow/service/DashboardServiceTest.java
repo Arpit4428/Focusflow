@@ -3,10 +3,12 @@ package com.focusflow.service;
 import com.focusflow.dto.DashboardResponse;
 import com.focusflow.model.FocusSession;
 import com.focusflow.model.Priority;
+import com.focusflow.model.Subject;
 import com.focusflow.model.Task;
 import com.focusflow.model.TaskStatus;
 import com.focusflow.model.User;
 import com.focusflow.repository.FocusSessionRepository;
+import com.focusflow.repository.SubjectRepository;
 import com.focusflow.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,6 +35,9 @@ public class DashboardServiceTest {
     @Mock
     private FocusSessionRepository focusSessionRepository;
 
+    @Mock
+    private SubjectRepository subjectRepository;
+
     private DashboardService dashboardService;
 
     private User userA;
@@ -41,7 +46,7 @@ public class DashboardServiceTest {
     @BeforeEach
     void setUp() {
         // SyncTaskExecutor runs CompletableFuture synchronously in unit test thread
-        dashboardService = new DashboardService(taskRepository, focusSessionRepository, new SyncTaskExecutor());
+        dashboardService = new DashboardService(taskRepository, focusSessionRepository, subjectRepository, new SyncTaskExecutor());
 
         userA = new User("Alice", "alice@example.com", "hash");
         userA.setId("userA_id");
@@ -57,6 +62,7 @@ public class DashboardServiceTest {
         when(taskRepository.countByUserIdAndStatus("userA_id", TaskStatus.COMPLETED)).thenReturn(0L);
         when(taskRepository.findByUserIdOrderByDueDateAsc("userA_id")).thenReturn(Collections.emptyList());
         when(focusSessionRepository.findByUserIdOrderByStartedAtDesc("userA_id")).thenReturn(Collections.emptyList());
+        when(subjectRepository.findByUserIdOrderByNameAsc("userA_id")).thenReturn(Collections.emptyList());
 
         DashboardResponse response = dashboardService.getDashboardData(userA);
 
@@ -67,34 +73,45 @@ public class DashboardServiceTest {
         assertEquals(0, response.getPendingTasks());
         assertEquals(0.0, response.getTaskCompletionRate());
         assertEquals(0, response.getProductivityScore());
-        assertEquals(7, response.getWeeklyFocus().size()); // 7 days of zeroes
+        assertEquals(7, response.getWeeklyFocus().size()); // 7 days of 0s
+        assertEquals(120, response.getDailyFocusGoalMinutes());
         assertTrue(response.getRecentTasks().isEmpty());
         assertTrue(response.getRecentSessions().isEmpty());
+        assertTrue(response.getSubjectAnalytics().isEmpty());
     }
 
     @Test
-    @DisplayName("Calculates today's focus time, task completion, and weekly stats correctly")
-    void testAggregatedStatistics() {
-        // Setup Tasks for userA
+    @DisplayName("Aggregated metrics, weekly rhythm, and subject analytics calculation")
+    void testAggregatedMetricsAndSubjectAnalytics() {
         when(taskRepository.countByUserId("userA_id")).thenReturn(4L);
         when(taskRepository.countByUserIdAndStatus("userA_id", TaskStatus.COMPLETED)).thenReturn(2L);
 
-        Task t1 = new Task("userA_id", "T1", "D1", "Math", Priority.HIGH, Instant.now());
+        Instant now = Instant.now();
+        Instant yesterday = now.minus(1, ChronoUnit.DAYS);
+
+        Subject sub1 = new Subject("userA_id", "Data Structures", "#E7FF63", null);
+        sub1.setId("sub_ds");
+        when(subjectRepository.findByUserIdOrderByNameAsc("userA_id")).thenReturn(List.of(sub1));
+
+        Task t1 = new Task("userA_id", "T1", "desc", "Data Structures", Priority.HIGH, now);
         t1.setId("t1");
-        when(taskRepository.findByUserIdOrderByDueDateAsc("userA_id")).thenReturn(List.of(t1));
+        t1.setSubjectId("sub_ds");
+        t1.setStatus(TaskStatus.COMPLETED);
 
-        // Setup Focus Sessions for userA:
-        // Session 1: Today, 3600 seconds (1 hour)
-        FocusSession todaySession = new FocusSession("userA_id", "Math", 3600L, Instant.now(), Instant.now(), true);
-        todaySession.setId("s1");
+        Task t2 = new Task("userA_id", "T2", "desc", "Data Structures", Priority.MEDIUM, now);
+        t2.setId("t2");
+        t2.setSubjectId("sub_ds");
+        t2.setStatus(TaskStatus.PENDING);
 
-        // Session 2: 2 days ago, 1800 seconds (30 mins)
-        FocusSession pastSession = new FocusSession("userA_id", "Physics", 1800L,
-                Instant.now().minus(2, ChronoUnit.DAYS), Instant.now().minus(2, ChronoUnit.DAYS), true);
-        pastSession.setId("s2");
+        when(taskRepository.findByUserIdOrderByDueDateAsc("userA_id")).thenReturn(List.of(t1, t2));
 
-        when(focusSessionRepository.findByUserIdOrderByStartedAtDesc("userA_id"))
-                .thenReturn(List.of(todaySession, pastSession));
+        // 3600s today, 1800s yesterday
+        FocusSession s1 = new FocusSession("userA_id", "sub_ds", "Data Structures", 3600L, now, now.plusSeconds(3600), true);
+        s1.setId("s1");
+        FocusSession s2 = new FocusSession("userA_id", "sub_ds", "Data Structures", 1800L, yesterday, yesterday.plusSeconds(1800), true);
+        s2.setId("s2");
+
+        when(focusSessionRepository.findByUserIdOrderByStartedAtDesc("userA_id")).thenReturn(List.of(s1, s2));
 
         DashboardResponse response = dashboardService.getDashboardData(userA);
 
@@ -106,23 +123,30 @@ public class DashboardServiceTest {
         assertEquals(50.0, response.getTaskCompletionRate());
         assertEquals(7, response.getWeeklyFocus().size());
 
-        // 2 distinct active days out of 7, 50% task rate, 3600s/7200s (50% focus target)
-        // Score = (0.5 * 40) + (2/7 * 30) + (0.5 * 30) = 20 + 8.57 + 15 = 44
-        assertEquals(44, response.getProductivityScore());
+        // Subject Analytics verification
+        assertNotNull(response.getSubjectAnalytics());
+        assertEquals(1, response.getSubjectAnalytics().size());
+        DashboardResponse.SubjectStat stat = response.getSubjectAnalytics().get(0);
+        assertEquals("sub_ds", stat.getSubjectId());
+        assertEquals("Data Structures", stat.getSubjectName());
+        assertEquals("#E7FF63", stat.getColor());
+        assertEquals(5400L, stat.getFocusSeconds());
+        assertEquals(90, stat.getFocusMinutes());
+        assertEquals(100.0, stat.getFocusPercentage());
+        assertEquals(2L, stat.getTotalTasks());
+        assertEquals(1L, stat.getCompletedTasks());
+        assertEquals(1L, stat.getPendingTasks());
     }
 
     @Test
     @DisplayName("Productivity score formula clamping and weighting")
     void testProductivityScoreFormula() {
-        // 100% tasks completed, 7/7 active days, > 7200s focus -> 100
         int perfectScore = dashboardService.calculateProductivityScore(10, 10, 8000, 7);
         assertEquals(100, perfectScore);
 
-        // 0 tasks, 0 sessions -> 0
         int zeroScore = dashboardService.calculateProductivityScore(0, 0, 0, 0);
         assertEquals(0, zeroScore);
 
-        // Half completion (20), 0 consistency (0), 0 focus (0) -> 20
         int halfTaskScore = dashboardService.calculateProductivityScore(10, 5, 0, 0);
         assertEquals(20, halfTaskScore);
     }
@@ -134,6 +158,7 @@ public class DashboardServiceTest {
         when(taskRepository.countByUserIdAndStatus("userB_id", TaskStatus.COMPLETED)).thenReturn(0L);
         when(taskRepository.findByUserIdOrderByDueDateAsc("userB_id")).thenReturn(Collections.emptyList());
         when(focusSessionRepository.findByUserIdOrderByStartedAtDesc("userB_id")).thenReturn(Collections.emptyList());
+        when(subjectRepository.findByUserIdOrderByNameAsc("userB_id")).thenReturn(Collections.emptyList());
 
         DashboardResponse response = dashboardService.getDashboardData(userB);
 
@@ -142,5 +167,21 @@ public class DashboardServiceTest {
         verify(taskRepository).countByUserId("userB_id");
         verify(focusSessionRepository).findByUserIdOrderByStartedAtDesc("userB_id");
         verify(taskRepository, never()).countByUserId("userA_id");
+    }
+
+    @Test
+    @DisplayName("User with custom daily focus goal (e.g. 240 mins) returns that goal in DashboardResponse")
+    void testCustomDailyFocusGoal() {
+        userA.setDailyFocusGoalMinutes(240);
+
+        when(taskRepository.countByUserId("userA_id")).thenReturn(0L);
+        when(taskRepository.countByUserIdAndStatus("userA_id", TaskStatus.COMPLETED)).thenReturn(0L);
+        when(taskRepository.findByUserIdOrderByDueDateAsc("userA_id")).thenReturn(Collections.emptyList());
+        when(focusSessionRepository.findByUserIdOrderByStartedAtDesc("userA_id")).thenReturn(Collections.emptyList());
+        when(subjectRepository.findByUserIdOrderByNameAsc("userA_id")).thenReturn(Collections.emptyList());
+
+        DashboardResponse response = dashboardService.getDashboardData(userA);
+
+        assertEquals(240, response.getDailyFocusGoalMinutes());
     }
 }

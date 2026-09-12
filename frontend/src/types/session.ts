@@ -1,6 +1,7 @@
 export interface FocusSession {
   id: string;
   userId: string;
+  subjectId?: string;
   subject: string;
   duration: number; // in seconds
   startedAt: string;
@@ -9,7 +10,8 @@ export interface FocusSession {
 }
 
 export interface FocusSessionRequest {
-  subject: string;
+  subjectId?: string;
+  subject?: string;
   duration: number; // in seconds
   startedAt: string;
   endedAt: string;

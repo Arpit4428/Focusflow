@@ -24,6 +24,8 @@ public class User {
     // Stored as BCrypt hash, never plaintext
     private String password;
 
+    private Integer dailyFocusGoalMinutes = 120;
+
     private Instant createdAt = Instant.now();
 
     public User() {
@@ -74,5 +76,13 @@ public class User {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getDailyFocusGoalMinutes() {
+        return dailyFocusGoalMinutes != null ? dailyFocusGoalMinutes : 120;
+    }
+
+    public void setDailyFocusGoalMinutes(Integer dailyFocusGoalMinutes) {
+        this.dailyFocusGoalMinutes = dailyFocusGoalMinutes != null ? dailyFocusGoalMinutes : 120;
     }
 }

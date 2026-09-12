@@ -37,7 +37,12 @@ public class FocusSessionController {
     @GetMapping
     public ResponseEntity<List<FocusSessionResponse>> getSessions(
             @AuthenticationPrincipal User currentUser,
-            @RequestParam(required = false) String subject) {
+            @RequestParam(required = false) String subject,
+            @RequestParam(required = false) String subjectId) {
+        if (subjectId != null && !subjectId.trim().isEmpty()) {
+            List<FocusSessionResponse> sessions = focusSessionService.getSessions(currentUser, subjectId, subject);
+            return ResponseEntity.ok(sessions);
+        }
         List<FocusSessionResponse> sessions = focusSessionService.getSessions(currentUser, subject);
         return ResponseEntity.ok(sessions);
     }

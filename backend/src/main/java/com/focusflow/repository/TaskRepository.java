@@ -28,6 +28,8 @@ public interface TaskRepository extends MongoRepository<Task, String> {
 
     boolean existsByIdAndUserId(String id, String userId);
 
+    boolean existsBySubjectIdAndUserId(String subjectId, String userId);
+
     long countByUserId(String userId);
 
     long countByUserIdAndStatus(String userId, TaskStatus status);

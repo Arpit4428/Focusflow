@@ -72,7 +72,7 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
           width: '48px',
           height: '48px',
           borderRadius: '50%',
-          backgroundColor: 'var(--surface-mint)',
+          backgroundColor: 'var(--surface-sage)',
           color: 'var(--text-primary)',
           display: 'flex',
           alignItems: 'center',

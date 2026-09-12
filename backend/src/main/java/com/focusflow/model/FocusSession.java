@@ -14,6 +14,7 @@ import java.time.Instant;
 @Document(collection = "focus_sessions")
 @CompoundIndex(name = "user_started_idx", def = "{'userId': 1, 'startedAt': -1}")
 @CompoundIndex(name = "user_subject_idx", def = "{'userId': 1, 'subject': 1}")
+@CompoundIndex(name = "user_subject_id_idx", def = "{'userId': 1, 'subjectId': 1}")
 public class FocusSession {
 
     @Id
@@ -21,6 +22,8 @@ public class FocusSession {
 
     @Indexed
     private String userId;
+
+    private String subjectId;
 
     private String subject;
 
@@ -45,6 +48,16 @@ public class FocusSession {
         this.completed = completed;
     }
 
+    public FocusSession(String userId, String subjectId, String subject, long duration, Instant startedAt, Instant endedAt, boolean completed) {
+        this.userId = userId;
+        this.subjectId = subjectId;
+        this.subject = subject;
+        this.duration = duration;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.completed = completed;
+    }
+
     public String getId() {
         return id;
     }
@@ -59,6 +72,14 @@ public class FocusSession {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getSubject() {

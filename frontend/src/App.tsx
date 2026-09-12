@@ -7,9 +7,11 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
+import { Subjects } from './pages/Subjects';
 import { FocusTimer } from './pages/FocusTimer';
 import { FocusHistory } from './pages/FocusHistory';
 import { Insights } from './pages/Insights';
+import { Calendar } from './pages/Calendar';
 
 export const App: React.FC = () => {
   return (
@@ -31,11 +33,31 @@ export const App: React.FC = () => {
             }
           />
           <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Calendar />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/tasks"
             element={
               <ProtectedRoute>
                 <AppLayout>
                   <Tasks />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subjects"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Subjects />
                 </AppLayout>
               </ProtectedRoute>
             }

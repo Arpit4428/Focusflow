@@ -2,11 +2,14 @@ package com.focusflow.service;
 
 import com.focusflow.dto.TaskRequest;
 import com.focusflow.dto.TaskResponse;
+import com.focusflow.exception.BadRequestException;
 import com.focusflow.exception.ResourceNotFoundException;
 import com.focusflow.model.Priority;
+import com.focusflow.model.Subject;
 import com.focusflow.model.Task;
 import com.focusflow.model.TaskStatus;
 import com.focusflow.model.User;
+import com.focusflow.repository.SubjectRepository;
 import com.focusflow.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
@@ -23,20 +26,38 @@ import java.util.stream.Collectors;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final SubjectRepository subjectRepository;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, SubjectRepository subjectRepository) {
         this.taskRepository = taskRepository;
+        this.subjectRepository = subjectRepository;
     }
 
     public TaskResponse createTask(TaskRequest request, User currentUser) {
+        String resolvedSubject;
+        String resolvedSubjectId = null;
+
+        if (request.getSubjectId() != null && !request.getSubjectId().trim().isEmpty()) {
+            String subId = request.getSubjectId().trim();
+            Subject subject = subjectRepository.findByIdAndUserId(subId, currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id: " + subId));
+            resolvedSubjectId = subject.getId();
+            resolvedSubject = subject.getName();
+        } else if (request.getSubject() != null && !request.getSubject().trim().isEmpty()) {
+            resolvedSubject = request.getSubject().trim();
+        } else {
+            throw new BadRequestException("Subject or subjectId is required");
+        }
+
         Task task = new Task(
                 currentUser.getId(),
                 request.getTitle().trim(),
                 request.getDescription() != null ? request.getDescription().trim() : null,
-                request.getSubject().trim(),
+                resolvedSubject,
                 request.getPriority(),
                 request.getDueDate()
         );
+        task.setSubjectId(resolvedSubjectId);
 
         Task savedTask = taskRepository.save(task);
         return TaskResponse.fromEntity(savedTask);
@@ -76,7 +97,17 @@ public class TaskService {
 
         task.setTitle(request.getTitle().trim());
         task.setDescription(request.getDescription() != null ? request.getDescription().trim() : null);
-        task.setSubject(request.getSubject().trim());
+
+        if (request.getSubjectId() != null && !request.getSubjectId().trim().isEmpty()) {
+            String subId = request.getSubjectId().trim();
+            Subject subject = subjectRepository.findByIdAndUserId(subId, currentUser.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found with id: " + subId));
+            task.setSubjectId(subject.getId());
+            task.setSubject(subject.getName());
+        } else if (request.getSubject() != null && !request.getSubject().trim().isEmpty()) {
+            task.setSubject(request.getSubject().trim());
+        }
+
         task.setPriority(request.getPriority());
         task.setDueDate(request.getDueDate());
 
