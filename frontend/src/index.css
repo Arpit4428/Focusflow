@@ -397,3 +397,25 @@ input, select, textarea {
     padding: 80px 16px 30px !important;
   }
 }
+
+/* Mini Focus Timer */
+.mini-focus-timer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px rgba(52, 59, 47, 0.18), 0 3px 8px rgba(52, 59, 47, 0.1) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+@media (max-width: 768px) {
+  .mini-focus-timer {
+    bottom: 16px !important;
+    right: 16px !important;
+    padding: 6px 10px 6px 12px !important;
+    gap: 8px !important;
+  }
+  .mini-focus-timer .mini-timer-subject {
+    display: none !important;
+  }
+  .mini-focus-timer .mini-timer-divider {
+    display: none !important;
+  }
+}

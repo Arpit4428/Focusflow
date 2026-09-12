@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useTimer } from '../hooks/useTimer';
+import { useFocusTimer } from '../hooks/useFocusTimer';
 import { sessionService } from '../services/sessionService';
 import { subjectService } from '../services/subjectService';
 import { FocusHistoryList } from '../components/focus/FocusHistoryList';
@@ -20,11 +20,20 @@ import {
 } from 'lucide-react';
 
 export const FocusTimer: React.FC = () => {
-  const { status, formattedTime, start, pause, resume, stop, reset } = useTimer();
+  const {
+    status,
+    formattedTime,
+    selectedSubjectId,
+    selectedSubjectName,
+    setSelectedSubject,
+    start,
+    pause,
+    resume,
+    stop,
+    reset,
+  } = useFocusTimer();
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
-  const [selectedSubjectName, setSelectedSubjectName] = useState<string>('');
   const [recentSessions, setRecentSessions] = useState<FocusSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -43,21 +52,16 @@ export const FocusTimer: React.FC = () => {
       setSubjects(subs);
 
       if (subs.length > 0) {
-        setSelectedSubjectId((prev) => {
-          if (prev && subs.some((s) => s.id === prev)) return prev;
-          return subs[0].id;
-        });
-        setSelectedSubjectName((prev) => {
-          const matched = subs.find((s) => s.id === (selectedSubjectId || subs[0].id));
-          return matched ? matched.name : (prev || subs[0].name);
-        });
+        if (!selectedSubjectId || !subs.some((s) => s.id === selectedSubjectId)) {
+          setSelectedSubject(subs[0].id, subs[0].name, subs[0].color);
+        }
       }
     } catch {
       // Non-blocking
     } finally {
       setIsLoading(false);
     }
-  }, [selectedSubjectId]);
+  }, [selectedSubjectId, setSelectedSubject]);
 
   useEffect(() => {
     loadData();
@@ -385,8 +389,7 @@ export const FocusTimer: React.FC = () => {
                       key={sub.id}
                       type="button"
                       onClick={() => {
-                        setSelectedSubjectId(sub.id);
-                        setSelectedSubjectName(sub.name);
+                        setSelectedSubject(sub.id, sub.name, sub.color);
                       }}
                       style={{
                         fontSize: '13px',

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { MiniFocusTimer } from '../focus/MiniFocusTimer';
 import {
   LayoutDashboard,
   CheckSquare,
@@ -248,6 +249,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       }}>
         {children}
       </main>
+
+      {/* Floating Persistent Mini Focus Timer */}
+      <MiniFocusTimer />
     </div>
   );
 };
