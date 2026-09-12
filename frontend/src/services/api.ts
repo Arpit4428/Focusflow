@@ -1,6 +1,24 @@
 import type { ApiError } from '../types/auth';
 
-const BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
+/**
+ * Resolve the API base URL.
+ * - In production, defaults to the deployed Render backend: https://focusflow-ef9j.onrender.com/api
+ * - In development, defaults to '/api' to use the local Vite proxy (http://localhost:8080)
+ * - If VITE_API_BASE_URL or VITE_API_URL is configured, it is normalized and used.
+ */
+const resolveBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    const trimmed = envUrl.trim().replace(/\/+$/, '');
+    return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+  }
+
+  return import.meta.env.PROD
+    ? 'https://focusflow-ef9j.onrender.com/api'
+    : '/api';
+};
+
+const BASE_URL = resolveBaseUrl();
 
 class ApiClient {
   private getToken(): string | null {
