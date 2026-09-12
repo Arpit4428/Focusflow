@@ -96,7 +96,7 @@ $$\textbf{Track} \longrightarrow \textbf{Store} \longrightarrow \textbf{Analyze}
 
 ---
 
-## ⚡ 5. Multithreading (Unit 3 Core Concept)
+## ⚡ 5. Multithreading 
 
 FocusFlow implements asynchronous multithreading inside `DashboardService.java` utilizing Java 17 `CompletableFuture` and a custom configured Spring `ThreadPoolTaskExecutor`:
 
@@ -218,14 +218,5 @@ npm run build
 
 ---
 
-## 🧪 9. Automated Testing Coverage
-- **Total Backend Tests:** **49** (0 failures, 0 errors, 0 skipped).
-- **Test Categories:**
-  - MockMvc Integration tests for all controllers (`AuthController`, `TaskController`, `FocusSessionController`, `DashboardController`, `InsightsController`).
-  - Unit tests for services (`AuthService`, `TaskService`, `FocusSessionService`, `DashboardService`, `InsightsService`).
-  - Validation tests verifying bad credentials, invalid passwords, unauthorized access, and cross-user data isolation.
 
----
 
-## 🎓 10. Viva Quick Reference
-For detailed explanations of 15 key academic viva questions, see `PROJECT_NOTES.md`.
