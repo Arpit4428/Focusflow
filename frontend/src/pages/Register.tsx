@@ -99,7 +99,7 @@ export const Register: React.FC = () => {
               marginBottom: '32px',
             }}>
               <span style={{ color: 'var(--text-primary)' }}>✦</span>
-              <span>Join FocusFlow Studio</span>
+              <span>Join Veyro Studio</span>
             </div>
 
             <h2 style={{
@@ -161,7 +161,7 @@ export const Register: React.FC = () => {
               Create Account
             </h1>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-              Fill in your details to start tracking with FocusFlow.
+              Fill in your details to start tracking with Veyro.
             </p>
           </div>
 

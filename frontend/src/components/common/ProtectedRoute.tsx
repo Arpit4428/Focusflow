@@ -28,7 +28,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
             animation: 'spin 1s linear infinite',
             margin: '0 auto 16px'
           }} />
-          <p>Loading FocusFlow...</p>
+          <p>Loading Veyro...</p>
         </div>
       </div>
     );

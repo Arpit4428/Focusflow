@@ -112,15 +112,8 @@ export const Login: React.FC = () => {
             gap: '12px',
           }}>
             <div style={{
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--accent-mustard)',
-              boxShadow: '0 0 6px rgba(214, 184, 90, 0.5)',
             }} />
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              Stateless • Unit 3 Architecture • Clean Data
-            </span>
+            
           </div>
         </div>
 
@@ -140,7 +133,7 @@ export const Login: React.FC = () => {
               color: 'var(--text-primary)',
               marginBottom: '8px',
             }}>
-              Sign in to FocusFlow
+              Sign in to Veyro
             </h1>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
               Enter your student credentials to resume your workspace.

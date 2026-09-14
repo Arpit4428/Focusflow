@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 /**
  * Dashboard Service.
  * Aggregates statistics from tasks, focus_sessions, and subjects collections for the authenticated user.
- *
- * Demonstrates Unit 3 Multithreading:
  * Executes task metrics computation and focus session analysis concurrently using
  * CompletableFuture and Spring's configured ThreadPoolTaskExecutor (Scatter-Gather pattern).
  */

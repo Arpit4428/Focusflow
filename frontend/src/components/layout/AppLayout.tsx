@@ -71,7 +71,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             ✦
           </div>
           <span style={{ fontWeight: 700, fontSize: '17px', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-            FocusFlow
+            Veyro
           </span>
         </div>
         <button
@@ -125,7 +125,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: '18px', letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>
-              FocusFlow
+              Veyro
             </div>
             
           </div>
