@@ -5,6 +5,7 @@ import { taskService } from '../services/taskService';
 import { sessionService } from '../services/sessionService';
 import { DailyGoalModal } from '../components/dashboard/DailyGoalModal';
 import { userService } from '../services/userService';
+import { useAuth } from '../context/AuthContext';
 import type { DashboardData } from '../types/dashboard';
 import type { ApiError } from '../types/auth';
 import {
@@ -22,11 +23,14 @@ import {
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userName = user?.name ? user.name.trim().split(' ')[0] : 'Student';
 
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [animatedPercent, setAnimatedPercent] = useState(0);
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
@@ -45,6 +49,17 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchDashboard();
   }, [fetchDashboard]);
+
+  useEffect(() => {
+    if (data) {
+      const goalSecs = (data.dailyFocusGoalMinutes || 120) * 60;
+      const pct = Math.min(100, Math.round((data.todayFocusSeconds / goalSecs) * 100));
+      const timer = setTimeout(() => {
+        setAnimatedPercent(pct);
+      }, 80);
+      return () => clearTimeout(timer);
+    }
+  }, [data?.todayFocusSeconds, data?.dailyFocusGoalMinutes]);
 
   const handleToggleTask = async (taskId: string) => {
     try {
@@ -134,12 +149,17 @@ export const Dashboard: React.FC = () => {
   // Maximum minutes for weekly rhythm scale
   const maxWeeklyMinutes = Math.max(...data.weeklyFocus.map((d) => d.minutes), 60);
 
+  // Circular progress ring geometry
+  const circleRadius = 90;
+  const circumference = 2 * Math.PI * circleRadius;
+  const strokeDashoffset = circumference - (circumference * Math.min(100, animatedPercent)) / 100;
+
   return (
     <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: '56px' }}>
       {/* ═══════════════════════════════════════════════════════════════
           SECTION 1: ASYMMETRIC EDITORIAL HERO (Direct Reference Adaptation)
-          Left: Oversized Serif Headline & Academic Narrative
-          Right: High-Precision Focus Centerpiece & Priority Queue
+          Left: Welcome back greeting & Quick actions
+          Right: Dominant Focus Centerpiece & Priority Queue
           ═══════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -156,17 +176,15 @@ export const Dashboard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            gap: '40px',
+            gap: '36px',
             maxWidth: '640px',
-            paddingTop: '16px',
-            paddingBottom: '16px',
+            paddingTop: '20px',
+            paddingBottom: '20px',
           }}
         >
           {/* Main Heading (Editorial Serif) */}
-          <h1 className="display-hero" style={{ margin: 0, lineHeight: 1.05 }}>
-            The Focus Studio <br />
-            <span className="display-hero-italic">Your Academic Velocity</span> <br />
-            Has Been Waiting For.
+          <h1 className="display-hero" style={{ margin: 0, lineHeight: 1.1 }}>
+            Welcome back, {userName}.
           </h1>
 
           {/* High-contrast Action Pill Buttons */}
@@ -200,7 +218,7 @@ export const Dashboard: React.FC = () => {
 
         {/* ── Right Column: The Layered Interface Centerpiece ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Card 1: Today's Focus Centerpiece (Styled like Transfer Widget in Reference) */}
+          {/* Card 1: Today's Focus Centerpiece */}
           <div
             className="editorial-panel corner-ticks"
             style={{
@@ -239,71 +257,170 @@ export const Dashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Refined Sans-Serif Digital Display */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '14px', flexWrap: 'wrap' }}>
-              <div
-                style={{
-                  fontFamily: 'var(--font-digits)',
-                  fontVariantNumeric: 'tabular-nums',
-                  fontSize: 'clamp(44px, 5.5vw, 62px)',
-                  fontWeight: 600,
-                  letterSpacing: '-0.03em',
-                  lineHeight: 1,
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}
-                <span style={{ fontSize: '20px', fontWeight: 400, color: 'var(--text-muted)', marginLeft: '8px' }}>
-                  logged
-                </span>
-              </div>
-
-              {isGoalReached && (
-                <span
+            {/* Distinctive Animated Circular Progress Ring Centerpiece */}
+            <div
+              style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '10px 0',
+              }}
+            >
+              <svg width="220" height="220" viewBox="0 0 220 220" style={{ overflow: 'visible' }}>
+                {/* Background Ring Track */}
+                <circle
+                  cx="110"
+                  cy="110"
+                  r={circleRadius}
+                  fill="none"
+                  stroke="var(--border)"
+                  strokeWidth="8"
+                  opacity="0.6"
+                />
+                {/* Subtle Inner Hairline Calibration Ring */}
+                <circle
+                  cx="110"
+                  cy="110"
+                  r={circleRadius - 12}
+                  fill="none"
+                  stroke="var(--border-subtle)"
+                  strokeWidth="1"
+                  strokeDasharray="2 6"
+                />
+                {/* Animated Foreground Progress Arc */}
+                <circle
+                  cx="110"
+                  cy="110"
+                  r={circleRadius}
+                  fill="none"
+                  stroke={isGoalReached ? 'var(--accent-amber)' : 'var(--text-primary)'}
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  transform="rotate(-90 110 110)"
                   style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 600,
-                    color: '#86EFAC',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    backgroundColor: 'var(--accent-olive-light)',
-                    border: '1px solid rgba(134, 239, 172, 0.25)',
-                  }}
-                >
-                  <Sparkles size={11} /> GOAL ACHIEVED
-                </span>
-              )}
-            </div>
-
-            {/* Segmented Progress Track Visualization */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-muted)' }}>
-                <span>{todayMinutes}m of {goalMinutes}m target</span>
-                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{progressPercent}% Complete</span>
-              </div>
-              <div
-                style={{
-                  width: '100%',
-                  height: '6px',
-                  backgroundColor: 'var(--bg-subtle)',
-                  borderRadius: '9999px',
-                  overflow: 'hidden',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${progressPercent}%`,
-                    backgroundColor: isGoalReached ? 'var(--accent-amber)' : 'var(--text-primary)',
-                    borderRadius: '9999px',
-                    transition: 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                    transition: 'stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease',
                   }}
                 />
+              </svg>
+
+              {/* Inside the Ring: Centered Numerals & Status */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  pointerEvents: 'none',
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-muted)',
+                    marginBottom: '6px',
+                  }}
+                >
+                  Today's Study
+                </span>
+
+                <div
+                  style={{
+                    fontFamily: 'var(--font-digits)',
+                    fontVariantNumeric: 'tabular-nums',
+                    fontSize: hrs > 0 ? '38px' : '44px',
+                    fontWeight: 700,
+                    letterSpacing: '-0.03em',
+                    lineHeight: 1,
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}
+                </div>
+
+                <div style={{ marginTop: '8px' }}>
+                  {isGoalReached ? (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-sans)',
+                        fontWeight: 600,
+                        color: 'var(--accent-amber)',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        backgroundColor: 'var(--accent-amber-subtle)',
+                        border: '1px solid rgba(212, 168, 67, 0.25)',
+                      }}
+                    >
+                      <Sparkles size={11} /> GOAL ACHIEVED
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-digits)',
+                        fontVariantNumeric: 'tabular-nums',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      {progressPercent}% completed
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Supporting Information Metrics Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px',
+                padding: '12px 14px',
+                backgroundColor: 'var(--bg-subtle)',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                textAlign: 'center',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
+                  Daily Target
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
+                  {formatGoal(goalMinutes)}
+                </div>
+              </div>
+
+              <div style={{ borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
+                  Completion
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: isGoalReached ? 'var(--accent-amber)' : 'var(--text-primary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
+                  {progressPercent}%
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
+                  Remaining
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
+                  {isGoalReached ? 'Complete' : `${Math.max(0, goalMinutes - todayMinutes)}m`}
+                </div>
               </div>
             </div>
 
