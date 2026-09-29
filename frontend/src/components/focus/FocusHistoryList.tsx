@@ -66,14 +66,14 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
         <div style={{
           width: '44px', height: '44px',
           borderRadius: '50%',
-          backgroundColor: 'var(--sage)',
-          color: 'var(--accent)',
+          backgroundColor: 'var(--bg-subtle)',
+          color: 'var(--text-muted)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 14px',
         }}>
           <Clock size={20} />
         </div>
-        <p style={{ color: 'var(--text-2)', fontSize: '13.5px', maxWidth: '420px', margin: '0 auto', lineHeight: 1.55 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', maxWidth: '420px', margin: '0 auto', lineHeight: 1.55 }}>
           {emptyMessage}
         </p>
       </div>
@@ -112,9 +112,9 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
               <div style={{
                 width: '36px', height: '36px',
                 borderRadius: 'var(--radius-md)',
-                backgroundColor: 'var(--sage)',
+                backgroundColor: 'var(--bg-subtle)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--accent)',
+                color: 'var(--text-primary)',
                 flexShrink: 0,
               }}>
                 <BookOpen size={16} />
@@ -122,7 +122,7 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
 
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                  <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {session.subject}
                   </h4>
                   <span className="badge badge-status-COMPLETED" style={{ fontSize: '10px', padding: '2px 7px' }}>
@@ -154,15 +154,15 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
                   aria-label="Delete Session"
                   style={{
                     background: 'none',
-                    color: 'var(--text-3)',
+                    color: 'var(--text-muted)',
                     padding: '5px',
                     borderRadius: 'var(--radius-sm)',
                     cursor: 'pointer',
-                    transition: 'var(--transition)',
+                    transition: 'var(--transition-fast)',
                     display: 'flex', alignItems: 'center',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--coral)'; e.currentTarget.style.backgroundColor = 'var(--coral-light)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent-coral)'; e.currentTarget.style.backgroundColor = 'var(--accent-coral-subtle)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
                   <Trash2 size={14} />
                 </button>
@@ -179,17 +179,17 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
             <div style={{
               width: '44px', height: '44px',
               borderRadius: '50%',
-              backgroundColor: 'var(--coral-light)',
-              color: 'var(--coral-text)',
+              backgroundColor: 'var(--accent-coral-subtle)',
+              color: 'var(--accent-coral-text)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 14px',
             }}>
               <Trash2 size={20} />
             </div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '6px', color: 'var(--text-1)' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
               Delete Focus Session?
             </h3>
-            <p style={{ color: 'var(--text-2)', fontSize: '13px', marginBottom: '22px', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '22px', lineHeight: 1.5 }}>
               Remove this focus session record from your history?
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>

@@ -21,6 +21,7 @@ export const FocusTimer: React.FC = () => {
   const {
     status,
     formattedTime,
+    elapsedSeconds,
     selectedSubjectId,
     selectedSubjectName,
     selectedSubjectColor,
@@ -120,14 +121,18 @@ export const FocusTimer: React.FC = () => {
   const isPaused = status === 'PAUSED';
   const isActive = isRunning || isPaused;
 
+  // Standard 25-minute cycle for visual progress indicator
+  const targetCycleSeconds = 25 * 60;
+  const progressPercent = Math.min(100, Math.round(((elapsedSeconds % targetCycleSeconds) / targetCycleSeconds) * 100));
+
   return (
     <div className="page-enter" style={{ maxWidth: '900px', margin: '0 auto' }}>
 
       {/* ── Page Header ── */}
       <div style={{ marginBottom: '36px' }}>
-        <div className="section-label" style={{ marginBottom: '10px' }}>Deep Work Studio</div>
+        <div className="text-meta" style={{ marginBottom: '8px', color: 'var(--text-muted)' }}>Deep Work Studio</div>
         <h1 className="title-hero">Focus Timer</h1>
-        <p style={{ color: 'var(--text-2)', fontSize: '14px', marginTop: '8px', lineHeight: 1.5 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '8px', lineHeight: 1.5 }}>
           Start a timed study session and track your focused productivity.
         </p>
       </div>
@@ -150,36 +155,89 @@ export const FocusTimer: React.FC = () => {
         boxShadow: 'var(--shadow-lg)',
         marginBottom: '20px',
       }}>
-        {/* Top status bar */}
+        {/* Top status bar & progress track (Themed correctly in both dark & light modes) */}
         <div style={{
-          backgroundColor: isRunning ? 'var(--accent)' : isPaused ? 'var(--mustard-light)' : 'var(--sage)',
-          padding: '12px 28px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          backgroundColor: 'var(--bg-subtle)',
+          borderBottom: '1px solid var(--border)',
           transition: 'background-color 0.3s ease',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {isRunning && (
+          <div style={{
+            padding: '12px 28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {isRunning && (
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--accent-olive)',
+                  boxShadow: '0 0 0 2px var(--accent-olive-light)',
+                  animation: 'pulseDot 1.4s ease-in-out infinite',
+                }} />
+              )}
+              {isPaused && (
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--accent-amber)',
+                }} />
+              )}
+              {isIdle && (
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--text-dim)',
+                }} />
+              )}
               <span style={{
-                width: '8px', height: '8px', borderRadius: '50%',
-                backgroundColor: 'rgba(255,255,255,0.9)',
-                animation: 'pulseDot 1.4s ease-in-out infinite',
-              }} />
-            )}
-            <span style={{
-              fontSize: '12px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-              color: isRunning ? 'rgba(255,255,255,0.9)' : 'var(--text-2)',
-            }}>
-              {isRunning ? 'Session Running' : isPaused ? 'Session Paused' : 'Ready to Focus'}
-            </span>
-          </div>
-          {selectedSubjectName && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: selectedSubjectColor || 'var(--text-3)' }} />
-              <span style={{ fontSize: '12px', fontWeight: 600, color: isRunning ? 'rgba(255,255,255,0.85)' : 'var(--text-2)' }}>
-                {selectedSubjectName}
+                fontSize: '11px',
+                fontWeight: 700,
+                letterSpacing: '0.07em',
+                textTransform: 'uppercase',
+                color: isRunning ? 'var(--text-primary)' : isPaused ? 'var(--accent-amber)' : 'var(--text-muted)',
+              }}>
+                {isRunning ? 'Session Running' : isPaused ? 'Session Paused' : 'Ready to Focus'}
               </span>
+            </div>
+
+            {selectedSubjectName && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: selectedSubjectColor || 'var(--accent-olive)',
+                }} />
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  {selectedSubjectName}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Progress track (styled with muted surface/border color, active indicator when running/paused) */}
+          {isActive && (
+            <div
+              style={{
+                height: '3px',
+                width: '100%',
+                backgroundColor: 'var(--border-subtle)',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${progressPercent}%`,
+                  backgroundColor: isRunning ? 'var(--accent-olive)' : 'var(--accent-amber)',
+                  transition: 'width 0.4s ease, background-color 0.3s ease',
+                }}
+              />
             </div>
           )}
         </div>
@@ -194,7 +252,7 @@ export const FocusTimer: React.FC = () => {
             fontSize: 'clamp(64px, 14vw, 108px)',
             fontWeight: 600,
             letterSpacing: '-0.02em',
-            color: isRunning ? 'var(--accent)' : isPaused ? 'var(--accent-amber)' : 'var(--text-primary)',
+            color: isRunning ? 'var(--text-primary)' : isPaused ? 'var(--accent-amber)' : 'var(--text-primary)',
             lineHeight: 1,
             marginBottom: '36px',
             transition: 'color 0.3s ease',
@@ -209,10 +267,10 @@ export const FocusTimer: React.FC = () => {
                 Select Subject to Focus On
               </label>
               {loadingSubjects ? (
-                <p style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: '13px' }}>Loading subjects...</p>
+                <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>Loading subjects...</p>
               ) : subjects.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '20px', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-lg)' }}>
-                  <p style={{ color: 'var(--text-2)', fontSize: '13px', marginBottom: '12px' }}>No subjects yet.</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '12px' }}>No subjects yet.</p>
                   <button onClick={() => navigate('/subjects')} className="btn btn-outline" style={{ fontSize: '12px', padding: '7px 16px' }}>
                     <BookOpen size={13} />
                     <span>Create a Subject</span>
@@ -227,24 +285,16 @@ export const FocusTimer: React.FC = () => {
                         key={sub.id}
                         type="button"
                         onClick={() => setSelectedSubject(sub.id, sub.name, sub.color || '')}
-                        style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '7px',
-                          padding: '8px 16px',
-                          borderRadius: 'var(--radius-btn)',
-                          border: isSelected ? '2px solid var(--text-1)' : '1.5px solid var(--border)',
-                          backgroundColor: isSelected ? 'var(--text-1)' : 'var(--surface)',
-                          color: isSelected ? '#fff' : 'var(--text-1)',
-                          fontWeight: isSelected ? 700 : 500,
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                          transition: 'var(--transition)',
-                        }}
+                        className={`subject-select-btn ${isSelected ? 'is-selected' : ''}`}
                       >
                         <span style={{
-                          width: '8px', height: '8px', borderRadius: '50%',
-                          backgroundColor: sub.color || 'var(--sage-dark)',
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: sub.color || 'var(--accent-olive)',
+                          flexShrink: 0,
                         }} />
-                        {sub.name}
+                        <span>{sub.name}</span>
                       </button>
                     );
                   })}
@@ -257,15 +307,19 @@ export const FocusTimer: React.FC = () => {
           {isActive && selectedSubjectName && (
             <div style={{ textAlign: 'center', marginBottom: '28px' }}>
               <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
                 padding: '8px 18px',
                 backgroundColor: 'var(--bg-subtle)',
                 border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-badge)',
-                fontSize: '13px', fontWeight: 600, color: 'var(--text-1)',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
               }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: selectedSubjectColor || 'var(--sage-dark)' }} />
-                {selectedSubjectName}
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: selectedSubjectColor || 'var(--accent-olive)' }} />
+                <span>{selectedSubjectName}</span>
               </div>
             </div>
           )}
@@ -341,7 +395,7 @@ export const FocusTimer: React.FC = () => {
           gap: '8px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-            <Clock size={15} color="var(--text-3)" />
+            <Clock size={15} color="var(--text-muted)" />
             <span className="text-meta">Today's Focus Time</span>
           </div>
           <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
@@ -360,7 +414,7 @@ export const FocusTimer: React.FC = () => {
           gap: '8px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-            <Play size={15} color="var(--text-3)" />
+            <Play size={15} color="var(--text-muted)" />
             <span className="text-meta">Sessions Today</span>
           </div>
           <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
@@ -371,7 +425,7 @@ export const FocusTimer: React.FC = () => {
 
       {/* ── Today's Sessions History ── */}
       <div>
-        <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '14px', letterSpacing: '-0.01em' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '14px', letterSpacing: '-0.01em' }}>
           Today's Sessions
         </h3>
         {loadingSessions ? (
