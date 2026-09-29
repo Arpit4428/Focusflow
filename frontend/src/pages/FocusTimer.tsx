@@ -19,15 +19,6 @@ import {
   Info,
 } from 'lucide-react';
 
-const DURATION_PRESETS = [
-  { id: '10s', label: '10s (Test)', seconds: 10 },
-  { id: '15m', label: '15m', seconds: 15 * 60 },
-  { id: '25m', label: '25m (Standard)', seconds: 25 * 60 },
-  { id: '45m', label: '45m', seconds: 45 * 60 },
-  { id: '60m', label: '60m', seconds: 60 * 60 },
-  { id: 'custom', label: 'Custom', seconds: 0 },
-];
-
 export const FocusTimer: React.FC = () => {
   const {
     status,
@@ -58,12 +49,6 @@ export const FocusTimer: React.FC = () => {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [loadingSubjects, setLoadingSubjects] = useState(true);
   const [loadingSessions, setLoadingSessions] = useState(true);
-
-  // Duration configuration state
-  const [selectedPreset, setSelectedPreset] = useState<string>('25m');
-  const [customMinutes, setCustomMinutes] = useState<string>('25');
-  const [customSeconds, setCustomSeconds] = useState<string>('0');
-  const [durationError, setDurationError] = useState<string | null>(null);
 
   const fetchSubjects = useCallback(async () => {
     setLoadingSubjects(true);
@@ -116,45 +101,12 @@ export const FocusTimer: React.FC = () => {
     return `${sec}s`;
   };
 
-  const validateAndSetDuration = (totalSec: number): boolean => {
-    if (isNaN(totalSec) || totalSec < 10) {
-      setDurationError('Minimum focus session duration is 10 seconds.');
-      return false;
+  // Ensure default session duration (25m) when idle
+  useEffect(() => {
+    if (status === 'IDLE' && targetDurationSeconds !== 25 * 60) {
+      setTargetDuration(25 * 60);
     }
-    if (totalSec > 43200) {
-      setDurationError('Maximum session duration is 12 hours.');
-      return false;
-    }
-    setDurationError(null);
-    setTargetDuration(totalSec);
-    return true;
-  };
-
-  const handleSelectPreset = (preset: typeof DURATION_PRESETS[0]) => {
-    setSelectedPreset(preset.id);
-    setFeedback(null);
-    if (preset.id === 'custom') {
-      const total = (parseInt(customMinutes, 10) || 0) * 60 + (parseInt(customSeconds, 10) || 0);
-      validateAndSetDuration(total);
-    } else {
-      setDurationError(null);
-      setTargetDuration(preset.seconds);
-    }
-  };
-
-  const handleCustomMinutesChange = (val: string) => {
-    setCustomMinutes(val);
-    const m = Math.max(0, parseInt(val, 10) || 0);
-    const s = Math.max(0, parseInt(customSeconds, 10) || 0);
-    validateAndSetDuration(m * 60 + s);
-  };
-
-  const handleCustomSecondsChange = (val: string) => {
-    setCustomSeconds(val);
-    const m = Math.max(0, parseInt(customMinutes, 10) || 0);
-    const s = Math.max(0, parseInt(val, 10) || 0);
-    validateAndSetDuration(m * 60 + s);
-  };
+  }, [status, targetDurationSeconds, setTargetDuration]);
 
   const handleStart = () => {
     if (!selectedSubjectId) {
@@ -162,15 +114,7 @@ export const FocusTimer: React.FC = () => {
       return;
     }
 
-    if (selectedPreset === 'custom') {
-      const m = Math.max(0, parseInt(customMinutes, 10) || 0);
-      const s = Math.max(0, parseInt(customSeconds, 10) || 0);
-      const total = m * 60 + s;
-      if (!validateAndSetDuration(total)) {
-        setFeedback({ type: 'error', message: 'Minimum focus session duration is 10 seconds.' });
-        return;
-      }
-    } else if (targetDurationSeconds < 10) {
+    if (targetDurationSeconds < 10) {
       setFeedback({ type: 'error', message: 'Minimum focus session duration is 10 seconds.' });
       return;
     }
@@ -364,7 +308,7 @@ export const FocusTimer: React.FC = () => {
           )}
         </div>
 
-        <div style={{ padding: '40px 36px' }}>
+        <div style={{ padding: '48px 36px 44px' }}>
           {/* ── Giant Timer Display ── */}
           <div style={{
             textAlign: 'center',
@@ -382,99 +326,10 @@ export const FocusTimer: React.FC = () => {
             {formattedTime}
           </div>
 
-          {/* ── Duration Selector & Presets (only visible when idle) ── */}
-          {isIdle && (
-            <div style={{ marginBottom: '32px' }}>
-              <label className="form-label" style={{ textAlign: 'center', display: 'block', marginBottom: '12px' }}>
-                Select Focus Duration
-              </label>
-
-              {/* Presets */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: selectedPreset === 'custom' ? '14px' : '0' }}>
-                {DURATION_PRESETS.map((preset) => {
-                  const isSelected = selectedPreset === preset.id;
-                  return (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => handleSelectPreset(preset)}
-                      className={`subject-select-btn ${isSelected ? 'is-selected' : ''}`}
-                      style={{ minWidth: '76px', justifyContent: 'center' }}
-                    >
-                      <Clock size={12} style={{ opacity: 0.7 }} />
-                      <span>{preset.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Custom Duration Input */}
-              {selectedPreset === 'custom' && (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '14px 18px',
-                  backgroundColor: 'var(--bg-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--border)',
-                  maxWidth: '320px',
-                  margin: '0 auto',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <input
-                        type="number"
-                        min="0"
-                        max="720"
-                        value={customMinutes}
-                        onChange={(e) => handleCustomMinutesChange(e.target.value)}
-                        className="form-input"
-                        style={{ width: '60px', textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-digits)' }}
-                      />
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>min</span>
-                    </div>
-
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>:</span>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={customSeconds}
-                        onChange={(e) => handleCustomSecondsChange(e.target.value)}
-                        className="form-input"
-                        style={{ width: '60px', textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-digits)' }}
-                      />
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>sec</span>
-                    </div>
-                  </div>
-
-                  {durationError && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: 'var(--accent-coral)',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      marginTop: '2px',
-                    }}>
-                      <AlertCircle size={13} />
-                      <span>{durationError}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
           {/* ── Subject Selector (only visible when idle) ── */}
           {isIdle && (
-            <div style={{ marginBottom: '32px' }}>
-              <label className="form-label" style={{ textAlign: 'center', display: 'block', marginBottom: '12px' }}>
+            <div style={{ marginBottom: '36px' }}>
+              <label className="form-label" style={{ textAlign: 'center', display: 'block', marginBottom: '14px' }}>
                 Select Subject to Focus On
               </label>
               {loadingSubjects ? (
