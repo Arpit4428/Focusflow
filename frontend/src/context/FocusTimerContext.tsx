@@ -5,15 +5,21 @@ import type { TimerStatus, CompletedSessionData } from '../hooks/useTimer';
 import { sessionService } from '../services/sessionService';
 import { PipFloatingTimer } from '../components/focus/PipFloatingTimer';
 
+export const MIN_SESSION_DURATION_SECONDS = 10;
+export const DEFAULT_SESSION_DURATION_SECONDS = 25 * 60;
+
 export interface FocusTimerContextType {
   status: TimerStatus;
   elapsedSeconds: number;
+  remainingSeconds: number;
+  targetDurationSeconds: number;
+  setTargetDuration: (seconds: number) => { success: boolean; error?: string };
   formattedTime: string;
   selectedSubjectId: string;
   selectedSubjectName: string;
   selectedSubjectColor: string;
   setSelectedSubject: (id: string, name: string, color?: string) => void;
-  start: () => void;
+  start: () => { success: boolean; error?: string };
   pause: () => void;
   resume: () => void;
   stop: () => CompletedSessionData | null;
@@ -33,6 +39,7 @@ interface PersistedTimerState {
   startTime: number | null;
   accumulatedPausedMs: number;
   pauseStartTime: number | null;
+  targetDurationSeconds?: number;
   selectedSubjectId: string;
   selectedSubjectName: string;
   selectedSubjectColor?: string;
@@ -85,9 +92,31 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const [status, setStatus] = useState<TimerStatus>(initialSaved?.status ?? 'IDLE');
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(() => getInitialElapsed(initialSaved));
+  const [targetDurationSeconds, setTargetDurationSeconds] = useState<number>(() => {
+    return initialSaved?.targetDurationSeconds && initialSaved.targetDurationSeconds >= MIN_SESSION_DURATION_SECONDS
+      ? initialSaved.targetDurationSeconds
+      : DEFAULT_SESSION_DURATION_SECONDS;
+  });
+  const targetDurationRef = useRef<number>(
+    initialSaved?.targetDurationSeconds && initialSaved.targetDurationSeconds >= MIN_SESSION_DURATION_SECONDS
+      ? initialSaved.targetDurationSeconds
+      : DEFAULT_SESSION_DURATION_SECONDS
+  );
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(initialSaved?.selectedSubjectId ?? '');
   const [selectedSubjectName, setSelectedSubjectName] = useState<string>(initialSaved?.selectedSubjectName ?? '');
   const [selectedSubjectColor, setSelectedSubjectColor] = useState<string>(initialSaved?.selectedSubjectColor ?? '');
+
+  const selectedSubjectIdRef = useRef<string>(initialSaved?.selectedSubjectId ?? '');
+  const selectedSubjectNameRef = useRef<string>(initialSaved?.selectedSubjectName ?? '');
+
+  useEffect(() => {
+    targetDurationRef.current = targetDurationSeconds;
+  }, [targetDurationSeconds]);
+
+  useEffect(() => {
+    selectedSubjectIdRef.current = selectedSubjectId;
+    selectedSubjectNameRef.current = selectedSubjectName;
+  }, [selectedSubjectId, selectedSubjectName]);
 
   // Picture-in-Picture window reference
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
@@ -108,6 +137,7 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         startTime: startTimeRef.current,
         accumulatedPausedMs: accumulatedPausedMsRef.current,
         pauseStartTime: pauseStartTimeRef.current,
+        targetDurationSeconds: targetDurationRef.current,
         selectedSubjectId,
         selectedSubjectName,
         selectedSubjectColor,
@@ -124,13 +154,32 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     if (color) setSelectedSubjectColor(color);
   }, []);
 
-  const start = useCallback(() => {
+  const setTargetDuration = useCallback((seconds: number): { success: boolean; error?: string } => {
+    if (isNaN(seconds) || seconds < MIN_SESSION_DURATION_SECONDS) {
+      return {
+        success: false,
+        error: `Minimum focus session duration is ${MIN_SESSION_DURATION_SECONDS} seconds.`,
+      };
+    }
+    setTargetDurationSeconds(seconds);
+    targetDurationRef.current = seconds;
+    return { success: true };
+  }, []);
+
+  const start = useCallback((): { success: boolean; error?: string } => {
+    if (targetDurationRef.current < MIN_SESSION_DURATION_SECONDS) {
+      return {
+        success: false,
+        error: `Minimum focus session duration is ${MIN_SESSION_DURATION_SECONDS} seconds.`,
+      };
+    }
     const now = Date.now();
     startTimeRef.current = now;
     accumulatedPausedMsRef.current = 0;
     pauseStartTimeRef.current = null;
     setElapsedSeconds(0);
     setStatus('RUNNING');
+    return { success: true };
   }, []);
 
   const pause = useCallback(() => {
@@ -165,7 +214,7 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 
     const totalDurationMs = endTime - startTimeRef.current - totalPausedMs;
-    const durationSeconds = Math.max(0, Math.floor(totalDurationMs / 1000));
+    const durationSeconds = Math.min(targetDurationRef.current, Math.max(0, Math.floor(totalDurationMs / 1000)));
 
     const result: CompletedSessionData = {
       durationSeconds,
@@ -309,26 +358,51 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   // Interval loop calculating exact difference between current timestamp and start timestamp
   useEffect(() => {
     if (status === 'RUNNING') {
-      // Immediate tick
-      if (startTimeRef.current !== null) {
-        const now = Date.now();
-        const currentElapsedMs = now - startTimeRef.current - accumulatedPausedMsRef.current;
-        setElapsedSeconds(Math.max(0, Math.floor(currentElapsedMs / 1000)));
-      }
-
-      intervalRef.current = window.setInterval(() => {
+      const updateTick = () => {
         if (startTimeRef.current !== null) {
           const now = Date.now();
           const currentElapsedMs = now - startTimeRef.current - accumulatedPausedMsRef.current;
-          setElapsedSeconds(Math.max(0, Math.floor(currentElapsedMs / 1000)));
+          const currentElapsed = Math.max(0, Math.floor(currentElapsedMs / 1000));
+          const target = targetDurationRef.current;
+
+          if (currentElapsed >= target) {
+            // Countdown reached zero!
+            setElapsedSeconds(target);
+            clearTimerInterval();
+            setStatus('COMPLETED');
+            localStorage.removeItem(TIMER_STORAGE_KEY);
+
+            // Auto-save completed session
+            if (selectedSubjectNameRef.current) {
+              sessionService.createSession({
+                subjectId: selectedSubjectIdRef.current || undefined,
+                subject: selectedSubjectNameRef.current,
+                duration: target,
+                startedAt: new Date(startTimeRef.current).toISOString(),
+                endedAt: new Date(now).toISOString(),
+                completed: true,
+              }).catch((e) => console.error('Failed to auto-save completed focus session:', e));
+            }
+
+            // Close PiP window if open
+            if (pipWindow && !pipWindow.closed) {
+              pipWindow.close();
+              setPipWindow(null);
+            }
+          } else {
+            setElapsedSeconds(currentElapsed);
+          }
         }
-      }, 250);
+      };
+
+      updateTick();
+      intervalRef.current = window.setInterval(updateTick, 250);
     } else {
       clearTimerInterval();
     }
 
     return () => clearTimerInterval();
-  }, [status]);
+  }, [status, pipWindow]);
 
   // Sync state to localStorage whenever critical timer properties change
   useEffect(() => {
@@ -345,12 +419,17 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     return () => window.removeEventListener('focusflow_auth_expired', handleAuthExpired);
   }, [reset]);
 
+  const remainingSeconds = Math.max(0, targetDurationSeconds - elapsedSeconds);
+
   return (
     <FocusTimerContext.Provider
       value={{
         status,
         elapsedSeconds,
-        formattedTime: formatTime(elapsedSeconds),
+        remainingSeconds,
+        targetDurationSeconds,
+        setTargetDuration,
+        formattedTime: formatTime(remainingSeconds),
         selectedSubjectId,
         selectedSubjectName,
         selectedSubjectColor,

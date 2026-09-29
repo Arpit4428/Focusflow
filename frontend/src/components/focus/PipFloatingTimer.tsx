@@ -14,6 +14,7 @@ export const PipFloatingTimer: React.FC<PipFloatingTimerProps> = ({ onClose, onF
     elapsedSeconds,
     selectedSubjectName,
     selectedSubjectColor,
+    targetDurationSeconds,
     pause,
     resume,
     stopAndSave,
@@ -22,9 +23,8 @@ export const PipFloatingTimer: React.FC<PipFloatingTimerProps> = ({ onClose, onF
   const isRunning = status === 'RUNNING';
   const isPaused = status === 'PAUSED';
 
-  // 25-minute Pomodoro cycle for visual progress indicator
-  const cycleSeconds = 25 * 60;
-  const progressPercent = Math.min(100, Math.round(((elapsedSeconds % cycleSeconds) / cycleSeconds) * 100));
+  const duration = targetDurationSeconds > 0 ? targetDurationSeconds : 25 * 60;
+  const progressPercent = Math.min(100, Math.round((elapsedSeconds / duration) * 100));
 
   const handleTogglePlayPause = () => {
     if (isRunning) {

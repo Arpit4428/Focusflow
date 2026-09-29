@@ -19,11 +19,22 @@ import {
   Info,
 } from 'lucide-react';
 
+const DURATION_PRESETS = [
+  { id: '10s', label: '10s (Test)', seconds: 10 },
+  { id: '15m', label: '15m', seconds: 15 * 60 },
+  { id: '25m', label: '25m (Standard)', seconds: 25 * 60 },
+  { id: '45m', label: '45m', seconds: 45 * 60 },
+  { id: '60m', label: '60m', seconds: 60 * 60 },
+  { id: 'custom', label: 'Custom', seconds: 0 },
+];
+
 export const FocusTimer: React.FC = () => {
   const {
     status,
     formattedTime,
     elapsedSeconds,
+    targetDurationSeconds,
+    setTargetDuration,
     selectedSubjectId,
     selectedSubjectName,
     selectedSubjectColor,
@@ -47,6 +58,12 @@ export const FocusTimer: React.FC = () => {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [loadingSubjects, setLoadingSubjects] = useState(true);
   const [loadingSessions, setLoadingSessions] = useState(true);
+
+  // Duration configuration state
+  const [selectedPreset, setSelectedPreset] = useState<string>('25m');
+  const [customMinutes, setCustomMinutes] = useState<string>('25');
+  const [customSeconds, setCustomSeconds] = useState<string>('0');
+  const [durationError, setDurationError] = useState<string | null>(null);
 
   const fetchSubjects = useCallback(async () => {
     setLoadingSubjects(true);
@@ -83,6 +100,14 @@ export const FocusTimer: React.FC = () => {
     fetchTodaySessions();
   }, [fetchSubjects, fetchTodaySessions]);
 
+  // Notify on session completion
+  useEffect(() => {
+    if (status === 'COMPLETED') {
+      setFeedback({ type: 'success', message: 'Focus session completed! Great work.' });
+      fetchTodaySessions();
+    }
+  }, [status, fetchTodaySessions]);
+
   const formatSecondsHuman = (sec: number) => {
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
@@ -91,13 +116,70 @@ export const FocusTimer: React.FC = () => {
     return `${sec}s`;
   };
 
+  const validateAndSetDuration = (totalSec: number): boolean => {
+    if (isNaN(totalSec) || totalSec < 10) {
+      setDurationError('Minimum focus session duration is 10 seconds.');
+      return false;
+    }
+    if (totalSec > 43200) {
+      setDurationError('Maximum session duration is 12 hours.');
+      return false;
+    }
+    setDurationError(null);
+    setTargetDuration(totalSec);
+    return true;
+  };
+
+  const handleSelectPreset = (preset: typeof DURATION_PRESETS[0]) => {
+    setSelectedPreset(preset.id);
+    setFeedback(null);
+    if (preset.id === 'custom') {
+      const total = (parseInt(customMinutes, 10) || 0) * 60 + (parseInt(customSeconds, 10) || 0);
+      validateAndSetDuration(total);
+    } else {
+      setDurationError(null);
+      setTargetDuration(preset.seconds);
+    }
+  };
+
+  const handleCustomMinutesChange = (val: string) => {
+    setCustomMinutes(val);
+    const m = Math.max(0, parseInt(val, 10) || 0);
+    const s = Math.max(0, parseInt(customSeconds, 10) || 0);
+    validateAndSetDuration(m * 60 + s);
+  };
+
+  const handleCustomSecondsChange = (val: string) => {
+    setCustomSeconds(val);
+    const m = Math.max(0, parseInt(customMinutes, 10) || 0);
+    const s = Math.max(0, parseInt(val, 10) || 0);
+    validateAndSetDuration(m * 60 + s);
+  };
+
   const handleStart = () => {
     if (!selectedSubjectId) {
       setFeedback({ type: 'error', message: 'Please select a subject before starting a focus session.' });
       return;
     }
+
+    if (selectedPreset === 'custom') {
+      const m = Math.max(0, parseInt(customMinutes, 10) || 0);
+      const s = Math.max(0, parseInt(customSeconds, 10) || 0);
+      const total = m * 60 + s;
+      if (!validateAndSetDuration(total)) {
+        setFeedback({ type: 'error', message: 'Minimum focus session duration is 10 seconds.' });
+        return;
+      }
+    } else if (targetDurationSeconds < 10) {
+      setFeedback({ type: 'error', message: 'Minimum focus session duration is 10 seconds.' });
+      return;
+    }
+
     setFeedback(null);
-    start();
+    const result = start();
+    if (!result.success && result.error) {
+      setFeedback({ type: 'error', message: result.error });
+    }
   };
 
   const handleStop = async () => {
@@ -115,6 +197,7 @@ export const FocusTimer: React.FC = () => {
   const handleReset = () => {
     reset();
     setFeedback(null);
+    fetchTodaySessions();
   };
 
   const handleDeleteSession = async (id: string) => {
@@ -125,11 +208,11 @@ export const FocusTimer: React.FC = () => {
   const isIdle = status === 'IDLE';
   const isRunning = status === 'RUNNING';
   const isPaused = status === 'PAUSED';
+  const isCompleted = status === 'COMPLETED';
   const isActive = isRunning || isPaused;
 
-  // Standard 25-minute cycle for visual progress indicator
-  const targetCycleSeconds = 25 * 60;
-  const progressPercent = Math.min(100, Math.round(((elapsedSeconds % targetCycleSeconds) / targetCycleSeconds) * 100));
+  const duration = targetDurationSeconds > 0 ? targetDurationSeconds : 25 * 60;
+  const progressPercent = Math.min(100, Math.round((elapsedSeconds / duration) * 100));
 
   return (
     <div className="page-enter" style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -201,14 +284,22 @@ export const FocusTimer: React.FC = () => {
                   backgroundColor: 'var(--text-dim)',
                 }} />
               )}
+              {isCompleted && (
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#86EFAC',
+                }} />
+              )}
               <span style={{
                 fontSize: '11px',
                 fontWeight: 700,
                 letterSpacing: '0.07em',
                 textTransform: 'uppercase',
-                color: isRunning ? 'var(--text-primary)' : isPaused ? 'var(--accent-amber)' : 'var(--text-muted)',
+                color: isRunning ? 'var(--text-primary)' : isPaused ? 'var(--accent-amber)' : isCompleted ? '#86EFAC' : 'var(--text-muted)',
               }}>
-                {isRunning ? 'Session Running' : isPaused ? 'Session Paused' : 'Ready to Focus'}
+                {isRunning ? 'Session Running' : isPaused ? 'Session Paused' : isCompleted ? 'Session Completed' : 'Ready to Focus'}
               </span>
             </div>
 
@@ -283,13 +374,102 @@ export const FocusTimer: React.FC = () => {
             fontSize: 'clamp(64px, 14vw, 108px)',
             fontWeight: 600,
             letterSpacing: '-0.02em',
-            color: isRunning ? 'var(--text-primary)' : isPaused ? 'var(--accent-amber)' : 'var(--text-primary)',
+            color: isRunning ? 'var(--text-primary)' : isPaused ? 'var(--accent-amber)' : isCompleted ? '#86EFAC' : 'var(--text-primary)',
             lineHeight: 1,
             marginBottom: '36px',
             transition: 'color 0.3s ease',
           }}>
             {formattedTime}
           </div>
+
+          {/* ── Duration Selector & Presets (only visible when idle) ── */}
+          {isIdle && (
+            <div style={{ marginBottom: '32px' }}>
+              <label className="form-label" style={{ textAlign: 'center', display: 'block', marginBottom: '12px' }}>
+                Select Focus Duration
+              </label>
+
+              {/* Presets */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: selectedPreset === 'custom' ? '14px' : '0' }}>
+                {DURATION_PRESETS.map((preset) => {
+                  const isSelected = selectedPreset === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handleSelectPreset(preset)}
+                      className={`subject-select-btn ${isSelected ? 'is-selected' : ''}`}
+                      style={{ minWidth: '76px', justifyContent: 'center' }}
+                    >
+                      <Clock size={12} style={{ opacity: 0.7 }} />
+                      <span>{preset.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Custom Duration Input */}
+              {selectedPreset === 'custom' && (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '14px 18px',
+                  backgroundColor: 'var(--bg-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--border)',
+                  maxWidth: '320px',
+                  margin: '0 auto',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="720"
+                        value={customMinutes}
+                        onChange={(e) => handleCustomMinutesChange(e.target.value)}
+                        className="form-input"
+                        style={{ width: '60px', textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-digits)' }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>min</span>
+                    </div>
+
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>:</span>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={customSeconds}
+                        onChange={(e) => handleCustomSecondsChange(e.target.value)}
+                        className="form-input"
+                        style={{ width: '60px', textAlign: 'center', padding: '6px 8px', fontFamily: 'var(--font-digits)' }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>sec</span>
+                    </div>
+                  </div>
+
+                  {durationError && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      color: 'var(--accent-coral)',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      marginTop: '2px',
+                    }}>
+                      <AlertCircle size={13} />
+                      <span>{durationError}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── Subject Selector (only visible when idle) ── */}
           {isIdle && (
@@ -463,6 +643,17 @@ export const FocusTimer: React.FC = () => {
                   <span>Reset</span>
                 </button>
               </>
+            )}
+
+            {isCompleted && (
+              <button
+                onClick={handleReset}
+                className="btn btn-primary"
+                style={{ padding: '12px 32px', fontSize: '15px', minWidth: '180px' }}
+              >
+                <RotateCcw size={15} />
+                <span>Start New Session</span>
+              </button>
             )}
           </div>
         </div>

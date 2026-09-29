@@ -59,7 +59,7 @@ export const Dashboard: React.FC = () => {
       }, 80);
       return () => clearTimeout(timer);
     }
-  }, [data?.todayFocusSeconds, data?.dailyFocusGoalMinutes]);
+  }, [data]);
 
   const handleToggleTask = async (taskId: string) => {
     try {
