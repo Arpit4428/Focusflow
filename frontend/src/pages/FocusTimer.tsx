@@ -230,7 +230,7 @@ export const FocusTimer: React.FC = () => {
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: '7px',
                           padding: '8px 16px',
-                          borderRadius: 'var(--radius-pill)',
+                          borderRadius: 'var(--radius-btn)',
                           border: isSelected ? '2px solid var(--text-1)' : '1.5px solid var(--border)',
                           backgroundColor: isSelected ? 'var(--text-1)' : 'var(--surface)',
                           color: isSelected ? '#fff' : 'var(--text-1)',
@@ -261,7 +261,7 @@ export const FocusTimer: React.FC = () => {
                 padding: '8px 18px',
                 backgroundColor: 'var(--bg-subtle)',
                 border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-pill)',
+                borderRadius: 'var(--radius-badge)',
                 fontSize: '13px', fontWeight: 600, color: 'var(--text-1)',
               }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: selectedSubjectColor || 'var(--sage-dark)' }} />

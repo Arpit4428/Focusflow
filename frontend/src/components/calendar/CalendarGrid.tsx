@@ -198,7 +198,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           >
             Today
           </button>
-          <div style={{ display: 'flex', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-btn)', overflow: 'hidden' }}>
             <button
               onClick={onPrevMonth}
               aria-label="Previous month"
@@ -345,7 +345,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     backgroundColor: isTextLight ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)',
                     color: isTextLight ? '#FFFFFF' : 'var(--text-primary)',
                     padding: '1px 5px',
-                    borderRadius: 'var(--radius-pill)',
+                    borderRadius: 'var(--radius-badge)',
                     lineHeight: '1.3',
                   }}>
                     {focusMinutes}m
