@@ -20,6 +20,7 @@ import {
   Circle,
   Layers,
   Pencil,
+  TrendingUp,
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -100,17 +101,15 @@ export const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', flexDirection: 'column', gap: '16px' }}>
         <div style={{
-          width: '40px',
-          height: '40px',
-          border: '3px solid var(--border)',
-          borderTopColor: 'var(--accent-primary)',
+          width: '36px', height: '36px',
+          border: '2.5px solid var(--border)',
+          borderTopColor: 'var(--accent)',
           borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto 16px',
+          animation: 'spin 0.8s linear infinite',
         }} />
-        <p>Loading your study dashboard...</p>
+        <p style={{ color: 'var(--text-3)', fontSize: '13px' }}>Loading your dashboard...</p>
       </div>
     );
   }
@@ -119,9 +118,9 @@ export const Dashboard: React.FC = () => {
     return (
       <div style={{ padding: '40px 0' }}>
         <div className="alert-banner alert-danger">
-          <AlertCircle size={18} />
+          <AlertCircle size={16} />
           <span>{error || 'Unable to fetch dashboard metrics.'}</span>
-          <button onClick={fetchDashboard} style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit' }}>
+          <button onClick={fetchDashboard} style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit', fontWeight: 600 }}>
             Retry
           </button>
         </div>
@@ -137,297 +136,278 @@ export const Dashboard: React.FC = () => {
   const progressPercent = Math.min(100, Math.round((data.todayFocusSeconds / goalSeconds) * 100));
 
   return (
-    <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
-      {/* Editorial Header Banner */}
+    <div className="page-enter" style={{ maxWidth: '1360px', margin: '0 auto' }}>
+
+      {/* ── Page Header ── */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'flex-end',
-        marginBottom: '36px',
+        alignItems: 'flex-start',
+        marginBottom: '40px',
         flexWrap: 'wrap',
         gap: '20px',
       }}>
         <div>
           <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '12px',
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            marginBottom: '8px',
+            fontSize: '11px', fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--text-3)', marginBottom: '10px',
           }}>
-            <span>✦</span>
-            <span>Academic Command Studio</span>
+            Academic Command Studio
           </div>
           <h1 className="title-hero">
             Welcome back, {user?.name?.split(' ')[0] || 'Student'}
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '15px', marginTop: '6px' }}>
+          <p style={{ color: 'var(--text-2)', fontSize: '15px', marginTop: '8px', maxWidth: '460px', lineHeight: 1.5 }}>
             Here is your daily study activity, focus momentum, and academic rhythm.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
           <button
             onClick={() => navigate('/tasks')}
             className="btn btn-outline"
-            style={{ padding: '11px 22px' }}
+            style={{ padding: '10px 20px' }}
           >
-            <Plus size={16} />
+            <Plus size={15} />
             <span>New Task</span>
           </button>
           <button
             onClick={() => navigate('/focus')}
             className="btn btn-primary"
-            style={{ padding: '11px 24px' }}
+            style={{ padding: '10px 22px' }}
           >
-            <Play size={15} fill="currentColor" />
+            <Play size={14} fill="currentColor" />
             <span>Start Focus</span>
           </button>
         </div>
       </div>
 
-      {/* Hero Hierarchy Grid: Dominant Focus Studio + Secondary Metrics */}
+      {/* ── Hero Row: Focus + Tasks ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-        gap: '24px',
-        marginBottom: '36px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: '20px',
+        marginBottom: '20px',
       }}>
-        {/* Dominant Hero Card: Today's Focus */}
+        {/* Today's Focus Hero Card */}
         <div style={{
-          gridColumn: 'span 1',
-          minWidth: '320px',
-          backgroundColor: 'var(--surface-sage)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border)',
-          padding: '36px 36px 32px',
+          backgroundColor: 'var(--accent)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '32px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
+          color: '#fff',
           position: 'relative',
-          boxShadow: 'var(--shadow-card)',
+          overflow: 'hidden',
+          minHeight: '280px',
         }}>
+          {/* Decorative circle */}
+          <div style={{
+            position: 'absolute', top: '-40px', right: '-40px',
+            width: '200px', height: '200px', borderRadius: '50%',
+            backgroundColor: 'rgba(255,255,255,0.06)', pointerEvents: 'none',
+          }} />
+
           <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '28px',
-            }}>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 12px',
-                borderRadius: 'var(--radius-pill)',
-                backgroundColor: 'rgba(251, 249, 243, 0.85)',
-                fontSize: '12px',
-                fontWeight: 600,
-                color: 'var(--text-primary)',
-              }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', opacity: 0.75 }}>
                 <Clock size={13} />
-                <span>TODAY'S FOCUS TIME</span>
+                <span>Today's Focus Time</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsGoalModalOpen(true)}
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: 'rgba(251, 249, 243, 0.85)',
-                  border: '1px solid var(--border-strong)',
+                  display: 'inline-flex', alignItems: 'center', gap: '5px',
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.25)',
                   borderRadius: 'var(--radius-pill)',
                   padding: '4px 10px',
-                  fontSize: '12px',
-                  color: 'var(--text-primary)',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  fontSize: '11px', color: '#fff', fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.15s ease',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--surface)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(251, 249, 243, 0.85)';
-                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'; }}
                 title="Edit Daily Focus Goal"
                 aria-label="Edit Daily Focus Goal"
               >
                 <span>Goal: {formatGoal(goalMinutes)}</span>
-                <Pencil size={11} />
+                <Pencil size={10} />
               </button>
             </div>
 
-            <div className="metric-giant" style={{ marginBottom: '12px' }}>
+            <div style={{
+              fontSize: 'clamp(44px, 8vw, 64px)',
+              fontWeight: 700,
+              letterSpacing: '-0.04em',
+              lineHeight: 1,
+              marginBottom: '14px',
+            }}>
               {formatSeconds(data.todayFocusSeconds)}
             </div>
 
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+            <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '20px', lineHeight: 1.4 }}>
               {isGoalReached
                 ? overMinutes > 0
-                  ? `Goal reached — ${overMinutes} ${overMinutes === 1 ? 'minute' : 'minutes'} over`
-                  : '✦ Daily target achieved! Fantastic concentration today.'
-                : `${remainingMinutes} minutes remaining to hit your ${formatGoal(goalMinutes)} daily benchmark.`}
+                  ? `Goal exceeded — ${overMinutes} ${overMinutes === 1 ? 'minute' : 'minutes'} over`
+                  : '✓ Daily target achieved!'
+                : `${remainingMinutes}m remaining to reach your ${formatGoal(goalMinutes)} goal`}
             </p>
 
-            {/* Benchmark Progress Bar */}
+            {/* Progress bar */}
             <div style={{
-              width: '100%',
-              height: '8px',
-              backgroundColor: 'rgba(52, 59, 47, 0.12)',
+              width: '100%', height: '4px',
+              backgroundColor: 'rgba(255,255,255,0.25)',
               borderRadius: 'var(--radius-pill)',
               overflow: 'hidden',
-              marginBottom: '32px',
+              marginBottom: '28px',
             }}>
               <div style={{
                 height: '100%',
                 width: `${progressPercent}%`,
-                backgroundColor: 'var(--accent-primary)',
+                backgroundColor: 'rgba(255,255,255,0.9)',
                 borderRadius: 'var(--radius-pill)',
-                transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)',
               }} />
             </div>
           </div>
 
           <button
             onClick={() => navigate('/focus')}
-            className="btn btn-primary"
             style={{
-              width: '100%',
-              padding: '14px 24px',
-              fontSize: '15px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              backgroundColor: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              borderRadius: 'var(--radius-md)',
+              padding: '12px 18px',
+              color: '#fff', fontWeight: 600, fontSize: '14px',
+              cursor: 'pointer', transition: 'all 0.15s ease',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'; }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Play size={16} fill="currentColor" />
+              <Play size={15} fill="currentColor" />
               <span>Launch Focus Studio</span>
             </span>
-            <ArrowRight size={16} />
+            <ArrowRight size={15} />
           </button>
         </div>
 
-        {/* Compact Companion Card: Study Tasks Status */}
+        {/* Tasks Status Card */}
         <div style={{
           backgroundColor: 'var(--surface)',
           border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '36px 32px',
+          borderRadius: 'var(--radius-xl)',
+          padding: '32px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          boxShadow: 'var(--shadow-card)',
+          boxShadow: 'var(--shadow-md)',
+          minHeight: '280px',
         }}>
           <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '24px',
-            }}>
-              <span className="text-meta" style={{ textTransform: 'uppercase' }}>STUDY TASKS STATUS</span>
-              <span className="badge" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <span className="text-meta">Study Tasks Status</span>
+              <span className="badge badge-status-PENDING">
                 {data.pendingTasks} pending
               </span>
             </div>
 
-            <div style={{ fontSize: '32px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: '8px' }}>
-              {data.completedTasks} completed
+            <div style={{
+              fontSize: 'clamp(28px, 4vw, 38px)',
+              fontWeight: 700,
+              letterSpacing: '-0.03em',
+              color: 'var(--text-1)',
+              marginBottom: '6px',
+              lineHeight: 1,
+            }}>
+              {data.completedTasks}
+              <span style={{ fontSize: '16px', fontWeight: 500, color: 'var(--text-3)', marginLeft: '8px' }}>
+                of {data.totalTasks} completed
+              </span>
             </div>
 
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-2)', marginBottom: '20px' }}>
               {data.totalTasks > 0
                 ? `${data.completedTasks} of ${data.totalTasks} total coursework tasks completed.`
                 : 'No tasks scheduled yet for your courses.'}
             </p>
 
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                <span>Completion progress</span>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{data.taskCompletionRate}%</span>
-              </div>
+            <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-3)' }}>
+              <span>Completion progress</span>
+              <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{data.taskCompletionRate}%</span>
+            </div>
+            <div style={{
+              width: '100%', height: '6px',
+              backgroundColor: 'var(--bg-subtle)',
+              borderRadius: 'var(--radius-pill)',
+              overflow: 'hidden',
+            }}>
               <div style={{
-                width: '100%',
-                height: '8px',
-                backgroundColor: 'var(--bg-secondary)',
+                height: '100%',
+                width: `${data.taskCompletionRate}%`,
+                backgroundColor: 'var(--accent)',
                 borderRadius: 'var(--radius-pill)',
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${data.taskCompletionRate}%`,
-                  backgroundColor: 'var(--accent-primary)',
-                  borderRadius: 'var(--radius-pill)',
-                  transition: 'width 0.5s ease',
-                }} />
-              </div>
+                transition: 'width 0.5s ease',
+              }} />
             </div>
           </div>
 
           <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingTop: '20px',
-            borderTop: '1px solid var(--border)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            paddingTop: '20px', borderTop: '1px solid var(--border)',
           }}>
             <Link
               to="/tasks"
               style={{
-                fontSize: '13px',
-                fontWeight: 600,
-                color: 'var(--text-primary)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
+                fontSize: '13px', fontWeight: 700,
+                color: 'var(--text-1)',
+                display: 'inline-flex', alignItems: 'center', gap: '5px',
               }}
             >
               <span>Manage Coursework Tasks</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </Link>
+            <TrendingUp size={16} color="var(--text-3)" />
           </div>
         </div>
       </div>
 
-      {/* Weekly Focus Rhythm Chart */}
-      <div style={{ marginBottom: '28px' }}>
+      {/* ── Weekly Chart ── */}
+      <div style={{ marginBottom: '20px' }}>
         <WeeklyBarChart data={data.weeklyFocus} />
       </div>
 
-      {/* Study Distribution by Subject */}
+      {/* ── Subject Distribution ── */}
       <div style={{
         backgroundColor: 'var(--surface)',
         border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '28px',
-        boxShadow: 'var(--shadow-card)',
-        marginBottom: '28px',
+        borderRadius: 'var(--radius-xl)',
+        padding: '28px 30px',
+        boxShadow: 'var(--shadow-md)',
+        marginBottom: '20px',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Layers size={18} style={{ color: 'var(--text-secondary)' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <Layers size={16} style={{ color: 'var(--text-3)' }} />
+              <h3 style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)', margin: 0 }}>
                 Study Distribution by Subject
               </h3>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Academic focus volume and task distribution across your enrolled subjects
+            <p style={{ fontSize: '13px', color: 'var(--text-2)' }}>
+              Academic focus volume across enrolled subjects
             </p>
           </div>
           <Link
             to="/subjects"
-            style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}
+            style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}
           >
             <span>Manage Subjects</span>
-            <ArrowRight size={14} />
+            <ArrowRight size={13} />
           </Link>
         </div>
 
@@ -436,64 +416,44 @@ export const Dashboard: React.FC = () => {
           data.subjectAnalytics.every((s) => s.focusSeconds === 0 && s.totalTasks === 0)) ? (
           <div style={{
             textAlign: 'center',
-            padding: '36px 20px',
-            backgroundColor: 'var(--bg-secondary)',
-            borderRadius: 'var(--radius-md)',
-            border: '1px dashed var(--border)',
-            color: 'var(--text-secondary)',
+            padding: '32px 20px',
+            backgroundColor: 'var(--bg-subtle)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px dashed var(--border-strong)',
           }}>
-            <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-              No study data yet
-            </h4>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '4px' }}>No study data yet</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-2)', margin: '0 0 16px' }}>
               Create a subject and start a focus session to see your study distribution.
             </p>
-            <Link to="/subjects" className="btn btn-outline" style={{ display: 'inline-flex', padding: '8px 18px', fontSize: '12px' }}>
+            <Link to="/subjects" className="btn btn-outline" style={{ display: 'inline-flex', padding: '7px 16px', fontSize: '12px' }}>
               <span>Go to Subjects</span>
-              <ArrowRight size={13} />
+              <ArrowRight size={12} />
             </Link>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             {data.subjectAnalytics.map((stat) => {
               const barColor = stat.color || '#94a3b8';
               return (
                 <div key={stat.subjectId || stat.subjectName} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {/* Top row: Subject name with color dot, and stats on the right */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '50%',
-                        backgroundColor: barColor,
-                        flexShrink: 0,
-                      }} />
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {stat.subjectName}
-                      </span>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: barColor, flexShrink: 0 }} />
+                      <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-1)' }}>{stat.subjectName}</span>
                     </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {formatSeconds(stat.focusSeconds)}
-                      </span>
-                      <span style={{ color: 'var(--text-muted)', fontWeight: 500, minWidth: '36px', textAlign: 'right' }}>
-                        {stat.focusPercentage}%
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{formatSeconds(stat.focusSeconds)}</span>
+                      <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>{stat.focusPercentage}%</span>
                       {stat.totalTasks > 0 && (
-                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-2)' }}>
                           {stat.completedTasks}/{stat.totalTasks} tasks
                         </span>
                       )}
                     </div>
                   </div>
-
-                  {/* Visual colored bar matching subject color */}
                   <div style={{
-                    width: '100%',
-                    height: '10px',
-                    backgroundColor: 'var(--bg-secondary)',
+                    width: '100%', height: '8px',
+                    backgroundColor: 'var(--bg-subtle)',
                     borderRadius: 'var(--radius-pill)',
                     overflow: 'hidden',
                   }}>
@@ -512,56 +472,52 @@ export const Dashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Two Column Layout: Active Tasks & Recent Focus History */}
+      {/* ── Two Column: Tasks + Sessions ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-        gap: '28px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+        gap: '20px',
       }}>
-        {/* Left: Active Tasks */}
+        {/* Active Tasks */}
         <div style={{
           backgroundColor: 'var(--surface)',
           border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
+          borderRadius: 'var(--radius-xl)',
           padding: '28px',
-          boxShadow: 'var(--shadow-card)',
+          boxShadow: 'var(--shadow-md)',
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '22px' }}>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)', marginBottom: '2px' }}>
                 Active Tasks
               </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Recent assignments &amp; study goals</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-3)' }}>Recent assignments &amp; study goals</p>
             </div>
             <Link
               to="/tasks"
-              style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}
+              style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               <span>View all</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </Link>
           </div>
 
           {data.recentTasks.length === 0 ? (
             <div style={{
               textAlign: 'center',
-              padding: '44px 16px',
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px dashed var(--border)',
-              color: 'var(--text-secondary)',
-              fontSize: '13px',
+              padding: '36px 16px',
+              backgroundColor: 'var(--bg-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px dashed var(--border-strong)',
             }}>
-              No tasks added yet.
-              <div style={{ marginTop: '14px' }}>
-                <Link to="/tasks" className="btn btn-outline" style={{ display: 'inline-flex' }}>
-                  <Plus size={14} />
-                  <span>Create First Task</span>
-                </Link>
-              </div>
+              <p style={{ color: 'var(--text-2)', fontSize: '13px', marginBottom: '14px' }}>No tasks added yet.</p>
+              <Link to="/tasks" className="btn btn-outline" style={{ display: 'inline-flex', fontSize: '12px', padding: '7px 14px' }}>
+                <Plus size={13} />
+                <span>Create First Task</span>
+              </Link>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {data.recentTasks.map((task) => {
                 const isCompleted = task.status === 'COMPLETED';
                 return (
@@ -571,46 +527,35 @@ export const Dashboard: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '14px 16px',
-                      backgroundColor: isCompleted ? 'var(--bg-primary)' : 'var(--surface)',
+                      padding: '12px 14px',
+                      backgroundColor: isCompleted ? 'var(--bg-subtle)' : 'var(--surface)',
                       borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border)',
-                      opacity: isCompleted ? 0.6 : 1,
+                      opacity: isCompleted ? 0.65 : 1,
                       transition: 'var(--transition)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
                       <button
                         onClick={() => handleToggleTask(task.id)}
                         aria-label={isCompleted ? 'Mark pending' : 'Mark completed'}
-                        style={{
-                          background: 'none',
-                          color: isCompleted ? 'var(--accent-primary)' : 'var(--text-muted)',
-                          padding: '2px',
-                          display: 'flex',
-                          alignItems: 'center',
-                        }}
+                        style={{ background: 'none', color: isCompleted ? 'var(--accent)' : 'var(--text-3)', padding: '2px', display: 'flex', alignItems: 'center', flexShrink: 0 }}
                       >
-                        {isCompleted ? <CheckCircle2 size={19} color="var(--accent-primary)" /> : <Circle size={19} />}
+                        {isCompleted ? <CheckCircle2 size={18} color="var(--accent)" /> : <Circle size={18} />}
                       </button>
                       <div style={{ overflow: 'hidden' }}>
                         <div style={{
-                          fontSize: '14px',
-                          fontWeight: 500,
+                          fontSize: '13.5px', fontWeight: 500,
                           textDecoration: isCompleted ? 'line-through' : 'none',
-                          color: isCompleted ? 'var(--text-muted)' : 'var(--text-primary)',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
+                          color: isCompleted ? 'var(--text-3)' : 'var(--text-1)',
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                         }}>
                           {task.title}
                         </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                          {task.subject}
-                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '1px' }}>{task.subject}</div>
                       </div>
                     </div>
-                    <span className={`badge badge-priority-${task.priority}`} style={{ flexShrink: 0 }}>
+                    <span className={`badge badge-priority-${task.priority}`} style={{ flexShrink: 0, marginLeft: '8px' }}>
                       {task.priority}
                     </span>
                   </div>
@@ -620,27 +565,27 @@ export const Dashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Right: Recent Focus Sessions */}
+        {/* Recent Focus Sessions */}
         <div style={{
           backgroundColor: 'var(--surface)',
           border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
+          borderRadius: 'var(--radius-xl)',
           padding: '28px',
-          boxShadow: 'var(--shadow-card)',
+          boxShadow: 'var(--shadow-md)',
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '22px' }}>
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)', marginBottom: '2px' }}>
                 Recent Focus Sessions
               </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Latest completed study intervals</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-3)' }}>Latest completed study intervals</p>
             </div>
             <Link
               to="/history"
-              style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}
+              style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               <span>Full History</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </Link>
           </div>
 
@@ -661,4 +606,3 @@ export const Dashboard: React.FC = () => {
     </div>
   );
 };
-

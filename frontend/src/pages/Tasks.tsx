@@ -23,17 +23,14 @@ export const Tasks: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
   const [statusFilter, setStatusFilter] = useState<'ALL' | TaskStatus>('ALL');
   const [priorityFilter, setPriorityFilter] = useState<'ALL' | Priority>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // Form states
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [formTitle, setFormTitle] = useState('');
   const [formSubjectId, setFormSubjectId] = useState('');
@@ -82,7 +79,6 @@ export const Tasks: React.FC = () => {
     setFormSubject(defaultSubName);
     setFormDescription('');
     setFormPriority('MEDIUM');
-    // Default to tomorrow 23:59
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(23, 59, 0, 0);
@@ -104,7 +100,6 @@ export const Tasks: React.FC = () => {
     setFormSubject(task.subject);
     setFormDescription(task.description || '');
     setFormPriority(task.priority);
-    // Format ISO string to datetime-local format YYYY-MM-DDTHH:mm
     const date = new Date(task.dueDate);
     const tzOffset = date.getTimezoneOffset() * 60000;
     const localISOTime = new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
@@ -186,304 +181,222 @@ export const Tasks: React.FC = () => {
     });
   };
 
+  const STATUS_FILTERS = ['ALL', 'PENDING', 'COMPLETED'] as const;
+
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      {/* Page Header */}
+    <div className="page-enter" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+      {/* ── Page Header ── */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-        marginBottom: '32px',
-        flexWrap: 'wrap',
-        gap: '20px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+        marginBottom: '36px', flexWrap: 'wrap', gap: '20px',
       }}>
         <div>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '12px',
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            marginBottom: '8px',
-          }}>
-            <span>✦</span>
-            <span>Task Organization Studio</span>
-          </div>
-          <h1 className="title-hero">
-            Tasks &amp; Assignments
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '15px', marginTop: '6px' }}>
+          <div className="section-label" style={{ marginBottom: '10px' }}>Task Organization Studio</div>
+          <h1 className="title-hero">Tasks &amp; Assignments</h1>
+          <p style={{ color: 'var(--text-2)', fontSize: '14px', marginTop: '8px', lineHeight: 1.5 }}>
             Track academic milestones, set deadlines, and focus on pending course goals.
           </p>
         </div>
-
-        <button
-          onClick={openCreateModal}
-          className="btn btn-primary"
-          style={{ padding: '12px 24px' }}
-        >
-          <Plus size={16} />
+        <button onClick={openCreateModal} className="btn btn-primary" style={{ padding: '10px 22px' }}>
+          <Plus size={15} />
           <span>New Task</span>
         </button>
       </div>
 
-      {/* Filter and Search Bar */}
+      {/* ── Filter Bar ── */}
       <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '14px',
+        display: 'flex', flexWrap: 'wrap', gap: '12px',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px 20px',
+        padding: '14px 18px',
         backgroundColor: 'var(--surface)',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-subtle)',
-        marginBottom: '28px',
+        boxShadow: 'var(--shadow-sm)',
+        marginBottom: '24px',
       }}>
         {/* Search */}
-        <div style={{ position: 'relative', minWidth: '240px', flex: '1' }}>
-          <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+        <div style={{ position: 'relative', minWidth: '220px', flex: '1' }}>
+          <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
           <input
             type="text"
             className="form-input"
             placeholder="Search by title or subject..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: '40px', height: '42px', fontSize: '14px', borderRadius: 'var(--radius-pill)' }}
+            style={{ paddingLeft: '36px', height: '38px', fontSize: '13px', borderRadius: 'var(--radius-md)' }}
           />
         </div>
 
-        {/* Status Filter Pills */}
-        <div style={{
-          display: 'flex',
-          gap: '4px',
-          backgroundColor: 'var(--bg-secondary)',
-          padding: '4px',
-          borderRadius: 'var(--radius-pill)',
-        }}>
-          {(['ALL', 'PENDING', 'COMPLETED'] as const).map((s) => (
+        {/* Status Pills */}
+        <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--bg-subtle)', padding: '3px', borderRadius: 'var(--radius-md)' }}>
+          {STATUS_FILTERS.map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
               style={{
-                padding: '6px 14px',
-                fontSize: '12px',
-                fontWeight: 600,
-                borderRadius: 'var(--radius-pill)',
-                backgroundColor: statusFilter === s ? 'var(--surface-sage)' : 'transparent',
-                color: statusFilter === s ? 'var(--text-primary)' : 'var(--text-secondary)',
+                padding: '5px 13px', fontSize: '12px', fontWeight: 600,
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: statusFilter === s ? 'var(--surface)' : 'transparent',
+                color: statusFilter === s ? 'var(--text-1)' : 'var(--text-3)',
+                boxShadow: statusFilter === s ? 'var(--shadow-sm)' : 'none',
                 transition: 'var(--transition)',
               }}
             >
-              {s}
+              {s === 'ALL' ? 'All' : s === 'PENDING' ? 'Pending' : 'Completed'}
             </button>
           ))}
         </div>
 
         {/* Priority Filter */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Priority:</span>
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value as 'ALL' | Priority)}
-            className="form-input"
-            style={{ height: '40px', padding: '6px 14px', fontSize: '13px', width: 'auto', borderRadius: 'var(--radius-pill)' }}
-          >
-            <option value="ALL">All Priorities</option>
-            <option value="HIGH">High</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="LOW">Low</option>
-          </select>
-        </div>
+        <select
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value as 'ALL' | Priority)}
+          className="form-input"
+          style={{ height: '38px', padding: '4px 12px', fontSize: '12px', width: 'auto', borderRadius: 'var(--radius-md)' }}
+        >
+          <option value="ALL">All Priorities</option>
+          <option value="HIGH">High</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="LOW">Low</option>
+        </select>
       </div>
 
-      {/* Error State */}
       {error && (
         <div className="alert-banner alert-danger">
-          <AlertCircle size={18} />
+          <AlertCircle size={16} />
           <span>{error}</span>
-          <button onClick={fetchTasks} style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit' }}>
-            Retry
-          </button>
+          <button onClick={fetchTasks} style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit', fontWeight: 600 }}>Retry</button>
         </div>
       )}
 
-      {/* Loading State */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-2)' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            border: '3px solid var(--border-strong)',
-            borderTopColor: 'var(--text-primary)',
+            width: '32px', height: '32px',
+            border: '2.5px solid var(--border)',
+            borderTopColor: 'var(--accent)',
             borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 16px',
+            animation: 'spin 0.8s linear infinite',
+            margin: '0 auto 14px',
           }} />
-          <p>Loading your study tasks...</p>
+          <p style={{ fontSize: '13px' }}>Loading your study tasks...</p>
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && filteredTasks.length === 0 && (
         <div style={{
-          textAlign: 'center',
-          padding: '64px 24px',
+          textAlign: 'center', padding: '64px 24px',
           backgroundColor: 'var(--surface)',
-          border: '1px dashed var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          marginTop: '12px',
+          border: '1px dashed var(--border-strong)',
+          borderRadius: 'var(--radius-xl)',
         }}>
           <div style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--surface-mint)',
-            color: 'var(--text-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: '52px', height: '52px', borderRadius: '50%',
+            backgroundColor: 'var(--sage)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px',
           }}>
-            <BookOpen size={24} />
+            <BookOpen size={22} color="var(--accent)" />
           </div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>No tasks found</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '420px', margin: '0 auto 20px' }}>
+          <h3 style={{ fontSize: '17px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-1)' }}>No tasks found</h3>
+          <p style={{ color: 'var(--text-2)', fontSize: '13px', maxWidth: '380px', margin: '0 auto 20px', lineHeight: 1.5 }}>
             {searchQuery || statusFilter !== 'ALL' || priorityFilter !== 'ALL'
               ? 'No tasks match your active filters. Try resetting the filters.'
               : 'You have no study tasks logged yet. Create your first task to plan your academic focus!'}
           </p>
-          <button onClick={openCreateModal} className="btn btn-primary" style={{ width: 'auto' }}>
-            <Plus size={16} />
+          <button onClick={openCreateModal} className="btn btn-primary" style={{ display: 'inline-flex' }}>
+            <Plus size={15} />
             <span>Create First Task</span>
           </button>
         </div>
       )}
 
-      {/* Clean Productivity List */}
       {!loading && filteredTasks.length > 0 && (
         <div style={{
           backgroundColor: 'var(--surface)',
           border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-card)',
+          borderRadius: 'var(--radius-xl)',
+          boxShadow: 'var(--shadow-md)',
           overflow: 'hidden',
         }}>
           {filteredTasks.map((task, index) => {
             const isCompleted = task.status === 'COMPLETED';
             const isLast = index === filteredTasks.length - 1;
-
             return (
               <div
                 key={task.id}
                 style={{
-                  padding: '20px 24px',
+                  padding: '18px 22px',
                   display: 'flex',
                   alignItems: 'flex-start',
                   justifyContent: 'space-between',
-                  gap: '16px',
+                  gap: '14px',
                   borderBottom: isLast ? 'none' : '1px solid var(--border)',
-                  backgroundColor: isCompleted ? 'rgba(239, 233, 222, 0.45)' : 'transparent',
-                  transition: 'var(--transition)',
+                  backgroundColor: isCompleted ? 'var(--bg-subtle)' : 'var(--surface)',
+                  transition: 'background-color 0.15s ease',
                 }}
               >
-                {/* Completion button & Title content */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', flex: 1, minWidth: 0 }}>
                   <button
                     onClick={() => handleToggleComplete(task.id)}
-                    style={{
-                      background: 'none',
-                      color: isCompleted ? 'var(--accent-primary)' : 'var(--text-muted)',
-                      padding: '2px',
-                      cursor: 'pointer',
-                      marginTop: '3px',
-                      flexShrink: 0,
-                    }}
+                    style={{ background: 'none', color: isCompleted ? 'var(--accent)' : 'var(--text-3)', padding: '2px', cursor: 'pointer', marginTop: '2px', flexShrink: 0 }}
                     title={isCompleted ? 'Mark Pending' : 'Mark Completed'}
                     aria-label={isCompleted ? 'Mark Pending' : 'Mark Completed'}
                   >
-                    {isCompleted ? <CheckCircle2 size={22} color="var(--accent-primary)" /> : <Circle size={22} />}
+                    {isCompleted ? <CheckCircle2 size={20} color="var(--accent)" /> : <Circle size={20} />}
                   </button>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
                       <h3 style={{
-                        fontSize: '17px',
-                        fontWeight: 600,
-                        color: isCompleted ? 'var(--text-muted)' : 'var(--text-primary)',
+                        fontSize: '14.5px', fontWeight: 600,
+                        color: isCompleted ? 'var(--text-3)' : 'var(--text-1)',
                         textDecoration: isCompleted ? 'line-through' : 'none',
-                        lineHeight: '1.3',
+                        lineHeight: 1.3,
                       }}>
                         {task.title}
                       </h3>
-
-                      <span className="badge badge-subject" style={{ fontSize: '11px' }}>
-                        {task.subject}
-                      </span>
-
-                      <span className={`badge badge-priority-${task.priority}`} style={{ fontSize: '10px' }}>
-                        {task.priority}
-                      </span>
+                      <span className="badge badge-subject" style={{ fontSize: '10px' }}>{task.subject}</span>
+                      <span className={`badge badge-priority-${task.priority}`} style={{ fontSize: '10px' }}>{task.priority}</span>
                     </div>
 
                     {task.description && (
-                      <p style={{
-                        fontSize: '13px',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '8px',
-                        lineHeight: '1.5',
-                      }}>
+                      <p style={{ fontSize: '12.5px', color: 'var(--text-2)', marginBottom: '6px', lineHeight: 1.5 }}>
                         {task.description}
                       </p>
                     )}
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <Calendar size={13} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: 'var(--text-3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Calendar size={11} />
                         <span>Due {formatDate(task.dueDate)}</span>
                       </div>
                       {isCompleted && (
-                        <span style={{ color: '#1F4C27', fontWeight: 600 }}>• Completed</span>
+                        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>· Completed</span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Edit & Delete Action Buttons */}
-                <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                   <button
                     onClick={() => openEditModal(task)}
-                    title="Edit Task"
-                    aria-label="Edit Task"
-                    style={{
-                      background: 'none',
-                      color: 'var(--text-muted)',
-                      padding: '6px',
-                      borderRadius: 'var(--radius-sm)',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                    title="Edit Task" aria-label="Edit Task"
+                    style={{ background: 'none', color: 'var(--text-3)', padding: '7px', borderRadius: 'var(--radius-sm)', transition: 'var(--transition)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-1)'; e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
-                    <Edit2 size={16} />
+                    <Edit2 size={14} />
                   </button>
                   <button
                     onClick={() => setDeleteConfirmId(task.id)}
-                    title="Delete Task"
-                    aria-label="Delete Task"
-                    style={{
-                      background: 'none',
-                      color: 'var(--text-muted)',
-                      padding: '6px',
-                      borderRadius: 'var(--radius-sm)',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-coral)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                    title="Delete Task" aria-label="Delete Task"
+                    style={{ background: 'none', color: 'var(--text-3)', padding: '7px', borderRadius: 'var(--radius-sm)', transition: 'var(--transition)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--coral)'; e.currentTarget.style.backgroundColor = 'var(--coral-light)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
@@ -492,29 +405,26 @@ export const Tasks: React.FC = () => {
         </div>
       )}
 
-      {/* Create / Edit Task Modal */}
+      {/* Create / Edit Modal */}
       {(isCreateOpen || editingTask) && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 600, letterSpacing: '-0.02em' }}>
+              <h2 style={{ fontSize: '19px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-1)' }}>
                 {editingTask ? 'Edit Task' : 'Create New Task'}
               </h2>
               <button
-                onClick={() => {
-                  setIsCreateOpen(false);
-                  setEditingTask(null);
-                }}
+                onClick={() => { setIsCreateOpen(false); setEditingTask(null); }}
                 aria-label="Close modal"
-                style={{ background: 'none', color: 'var(--text-muted)', padding: '4px' }}
+                style={{ background: 'none', color: 'var(--text-3)', padding: '5px', borderRadius: 'var(--radius-sm)' }}
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
             {formError && (
               <div className="alert-banner alert-danger">
-                <AlertCircle size={16} />
+                <AlertCircle size={14} />
                 <span>{formError}</span>
               </div>
             )}
@@ -523,14 +433,11 @@ export const Tasks: React.FC = () => {
               <div className="form-group">
                 <label className="form-label" htmlFor="taskTitle">Task Title *</label>
                 <input
-                  id="taskTitle"
-                  type="text"
-                  className="form-input"
+                  id="taskTitle" type="text" className="form-input"
                   placeholder="e.g. Chapter 4 Practice Problems"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  required
-                  autoFocus
+                  required autoFocus
                 />
               </div>
 
@@ -539,34 +446,22 @@ export const Tasks: React.FC = () => {
                   <label className="form-label" htmlFor="taskSubject">Subject *</label>
                   {subjects.length === 0 ? (
                     <div style={{
-                      padding: '10px 12px',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundColor: 'var(--bg-secondary)',
-                      fontSize: '13px',
-                      color: 'var(--text-secondary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      border: '1px solid var(--border)',
+                      padding: '9px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--bg-subtle)',
+                      fontSize: '13px', color: 'var(--text-2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      border: '1.5px solid var(--border)',
                     }}>
                       <span>No subjects yet.</span>
-                      <Link
-                        to="/subjects"
-                        style={{
-                          color: 'var(--text-primary)',
-                          fontWeight: 600,
-                          textDecoration: 'underline',
-                          fontSize: '12px',
-                        }}
-                      >
+                      <Link to="/subjects" style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '12px' }}>
                         Create Subject
                       </Link>
                     </div>
                   ) : (
                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                       <select
-                        id="taskSubject"
-                        className="form-input"
+                        id="taskSubject" className="form-input"
                         value={formSubjectId}
                         onChange={(e) => {
                           const selectedId = e.target.value;
@@ -582,24 +477,16 @@ export const Tasks: React.FC = () => {
                           <option value="">{formSubject} (Legacy)</option>
                         )}
                         {subjects.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name}
-                          </option>
+                          <option key={s.id} value={s.id}>{s.name}</option>
                         ))}
                       </select>
-                      <div
-                        style={{
-                          position: 'absolute',
-                          left: '12px',
-                          width: '12px',
-                          height: '12px',
-                          borderRadius: '50%',
-                          backgroundColor:
-                            subjects.find((s) => s.id === formSubjectId)?.color || '#DDEBDF',
-                          border: '1px solid rgba(0,0,0,0.15)',
-                          pointerEvents: 'none',
-                        }}
-                      />
+                      <div style={{
+                        position: 'absolute', left: '12px',
+                        width: '10px', height: '10px', borderRadius: '50%',
+                        backgroundColor: subjects.find((s) => s.id === formSubjectId)?.color || 'var(--sage-dark)',
+                        border: '1px solid rgba(0,0,0,0.12)',
+                        pointerEvents: 'none',
+                      }} />
                     </div>
                   )}
                 </div>
@@ -607,8 +494,7 @@ export const Tasks: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label" htmlFor="taskPriority">Priority *</label>
                   <select
-                    id="taskPriority"
-                    className="form-input"
+                    id="taskPriority" className="form-input"
                     value={formPriority}
                     onChange={(e) => setFormPriority(e.target.value as Priority)}
                   >
@@ -622,9 +508,7 @@ export const Tasks: React.FC = () => {
               <div className="form-group">
                 <label className="form-label" htmlFor="taskDueDate">Due Date &amp; Time *</label>
                 <input
-                  id="taskDueDate"
-                  type="datetime-local"
-                  className="form-input"
+                  id="taskDueDate" type="datetime-local" className="form-input"
                   value={formDueDate}
                   onChange={(e) => setFormDueDate(e.target.value)}
                   required
@@ -634,32 +518,23 @@ export const Tasks: React.FC = () => {
               <div className="form-group">
                 <label className="form-label" htmlFor="taskDescription">Description (Optional)</label>
                 <textarea
-                  id="taskDescription"
-                  className="form-input"
-                  rows={3}
+                  id="taskDescription" className="form-input" rows={3}
                   placeholder="Key notes, reference pages, or assignment instructions..."
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
+                  style={{ resize: 'vertical' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '24px' }}>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' }}>
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsCreateOpen(false);
-                    setEditingTask(null);
-                  }}
-                  className="btn btn-outline"
-                  disabled={isSaving}
+                  onClick={() => { setIsCreateOpen(false); setEditingTask(null); }}
+                  className="btn btn-outline" disabled={isSaving}
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={isSaving}
-                >
+                <button type="submit" className="btn btn-primary" disabled={isSaving}>
                   {isSaving ? 'Saving...' : editingTask ? 'Update Task' : 'Create Task'}
                 </button>
               </div>
@@ -671,37 +546,22 @@ export const Tasks: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center' }}>
+          <div className="modal-content" style={{ maxWidth: '380px', textAlign: 'center' }}>
             <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--accent-coral-soft)',
-              color: 'var(--accent-coral-text)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              width: '48px', height: '48px', borderRadius: '50%',
+              backgroundColor: 'var(--coral-light)', color: 'var(--coral-text)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 16px',
             }}>
-              <Trash2 size={24} />
+              <Trash2 size={22} />
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Delete Task?</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px', color: 'var(--text-1)' }}>Delete Task?</h3>
+            <p style={{ color: 'var(--text-2)', fontSize: '13px', marginBottom: '24px', lineHeight: 1.5 }}>
               Are you sure you want to delete this task? This action cannot be undone.
             </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button
-                onClick={() => setDeleteConfirmId(null)}
-                className="btn btn-outline"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDeleteTask(deleteConfirmId)}
-                className="btn btn-danger"
-              >
-                Yes, Delete
-              </button>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button onClick={() => setDeleteConfirmId(null)} className="btn btn-outline">Cancel</button>
+              <button onClick={() => handleDeleteTask(deleteConfirmId)} className="btn btn-danger">Yes, Delete</button>
             </div>
           </div>
         </div>
@@ -709,4 +569,3 @@ export const Tasks: React.FC = () => {
     </div>
   );
 };
-

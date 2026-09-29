@@ -162,9 +162,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     <div style={{
       backgroundColor: 'var(--surface)',
       border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)',
+      borderRadius: 'var(--radius-xl)',
       padding: '24px',
-      boxShadow: 'var(--shadow-card)',
+      boxShadow: 'var(--shadow-sm)',
     }}>
       {/* Month Navigation Header */}
       <div style={{

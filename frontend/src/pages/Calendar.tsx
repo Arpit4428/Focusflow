@@ -99,27 +99,15 @@ export const Calendar: React.FC = () => {
   const selectedActivity = activities.find((a) => a.date === selectedDate);
 
   return (
-    <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
-      {/* Editorial Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          fontSize: '12px',
-          fontWeight: 600,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          color: 'var(--text-muted)',
-          marginBottom: '8px',
-        }}>
-          <CalendarIcon size={14} />
-          <span>Academic Calendar</span>
+    <div className="page-enter" style={{ maxWidth: '1360px', margin: '0 auto' }}>
+      {/* ── Header ── */}
+      <div style={{ marginBottom: '36px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '10px' }}>
+          <CalendarIcon size={13} color="var(--text-3)" />
+          <span className="section-label">Academic Calendar</span>
         </div>
-        <h1 className="title-hero">
-          Schedule &amp; Activity
-        </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '15px', marginTop: '6px' }}>
+        <h1 className="title-hero">Schedule &amp; Activity</h1>
+        <p style={{ color: 'var(--text-2)', fontSize: '14px', marginTop: '8px', lineHeight: 1.5 }}>
           Explore your daily focus duration, task deadlines, and coursework consistency across the month.
         </p>
       </div>
@@ -127,11 +115,11 @@ export const Calendar: React.FC = () => {
       {error && (
         <div style={{ marginBottom: '24px' }}>
           <div className="alert-banner alert-danger">
-            <AlertCircle size={18} />
+            <AlertCircle size={16} />
             <span>{error}</span>
             <button
               onClick={() => fetchCalendar(currentYear, currentMonth)}
-              style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit' }}
+              style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit', fontWeight: 600 }}
             >
               Retry
             </button>
@@ -140,26 +128,24 @@ export const Calendar: React.FC = () => {
       )}
 
       {loading ? (
-        <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
+        <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-2)' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            border: '3px solid var(--border-strong)',
-            borderTopColor: 'var(--text-primary)',
+            width: '32px', height: '32px',
+            border: '2.5px solid var(--border)',
+            borderTopColor: 'var(--accent)',
             borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 16px',
+            animation: 'spin 0.8s linear infinite',
+            margin: '0 auto 14px',
           }} />
-          <p>Loading monthly calendar data...</p>
+          <p style={{ fontSize: '13px' }}>Loading monthly calendar data...</p>
         </div>
       ) : (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '28px',
+          gap: '24px',
           alignItems: 'start',
         }}>
-          {/* Main Month Grid (takes 1.4-1.5 flex ratio on wide screens) */}
           <div style={{ flex: '1 1 60%' }}>
             <CalendarGrid
               year={currentYear}
@@ -173,8 +159,7 @@ export const Calendar: React.FC = () => {
             />
           </div>
 
-          {/* Side Panel: Selected Day Details */}
-          <div style={{ flex: '1 1 40%', minWidth: '320px' }}>
+          <div style={{ flex: '1 1 40%', minWidth: '300px' }}>
             <DayActivityPanel
               dateStr={selectedDate}
               activity={selectedActivity}

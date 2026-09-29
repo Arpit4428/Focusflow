@@ -64,9 +64,9 @@ export const DayActivityPanel: React.FC<DayActivityPanelProps> = ({
     <div style={{
       backgroundColor: 'var(--surface)',
       border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)',
+      borderRadius: 'var(--radius-xl)',
       padding: '28px',
-      boxShadow: 'var(--shadow-card)',
+      boxShadow: 'var(--shadow-sm)',
       display: 'flex',
       flexDirection: 'column',
       gap: '24px',

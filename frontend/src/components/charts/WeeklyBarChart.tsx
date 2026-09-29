@@ -6,31 +6,30 @@ interface WeeklyBarChartProps {
 }
 
 export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data }) => {
-  // Find maximum minutes for scaling (minimum scale ceiling of 60 mins to keep empty charts sensible)
   const maxMinutes = Math.max(...data.map((d) => d.minutes), 60);
-
   const totalMinutes = data.reduce((acc, d) => acc + d.minutes, 0);
 
   return (
     <div style={{
       backgroundColor: 'var(--surface)',
       border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)',
+      borderRadius: 'var(--radius-xl)',
       padding: '28px',
-      boxShadow: 'var(--shadow-card)',
+      boxShadow: 'var(--shadow-sm)',
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)', margin: 0, marginBottom: '3px' }}>
             Weekly Focus Rhythm
           </h3>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Daily study minutes over the past 7 days</p>
+          <p style={{ fontSize: '12px', color: 'var(--text-3)', margin: 0 }}>Daily study minutes — past 7 days</p>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <span style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
             {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
           </span>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: 500 }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-3)', display: 'block', fontWeight: 600, marginTop: '1px' }}>
             7-day aggregate
           </span>
         </div>
@@ -38,28 +37,28 @@ export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data }) => {
 
       {totalMinutes === 0 ? (
         <div style={{
-          height: '180px',
+          height: '160px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'var(--bg-secondary)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px dashed var(--border)',
-          color: 'var(--text-secondary)',
+          backgroundColor: 'var(--bg-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px dashed var(--border-strong)',
+          color: 'var(--text-3)',
           fontSize: '13px',
           textAlign: 'center',
           padding: '24px',
         }}>
-          No focus activity recorded in the past 7 days. Start a timer to build your study rhythm!
+          No focus activity recorded in the past 7 days.
         </div>
       ) : (
         <div style={{
           display: 'flex',
           alignItems: 'flex-end',
           justifyContent: 'space-between',
-          height: '180px',
+          height: '160px',
           paddingTop: '20px',
-          gap: '12px',
+          gap: '8px',
         }}>
           {data.map((dayStat, idx) => {
             const heightPercent = Math.max(6, Math.round((dayStat.minutes / maxMinutes) * 100));
@@ -76,57 +75,55 @@ export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data }) => {
                   height: '100%',
                   justifyContent: 'flex-end',
                 }}
-                title={`${dayStat.day}, ${dayStat.date}: ${dayStat.minutes} minutes (${Math.floor(dayStat.seconds / 3600)}h ${Math.floor((dayStat.seconds % 3600) / 60)}m)`}
+                title={`${dayStat.day}: ${dayStat.minutes} min`}
               >
-                {/* Minute Value Tooltip/Label */}
+                {/* Minute Label */}
                 <span style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: dayStat.minutes > 0 ? 'var(--text-primary)' : 'transparent',
-                  marginBottom: '8px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: dayStat.minutes > 0 ? 'var(--text-1)' : 'transparent',
+                  marginBottom: '6px',
                   userSelect: 'none',
                 }}>
                   {dayStat.minutes > 0 ? `${dayStat.minutes}m` : '0'}
                 </span>
 
-                {/* Vertical Bar */}
+                {/* Bar */}
                 <div style={{
                   width: '100%',
-                  maxWidth: '38px',
+                  maxWidth: '36px',
                   height: `${heightPercent}%`,
-                  borderRadius: '10px 10px 4px 4px',
+                  borderRadius: '6px 6px 3px 3px',
                   backgroundColor: isToday
-                    ? (dayStat.minutes > 0 ? 'var(--accent-mustard)' : 'var(--border-strong)')
+                    ? (dayStat.minutes > 0 ? 'var(--accent)' : 'var(--border-strong)')
                     : dayStat.minutes > 0
-                    ? 'var(--surface-sage)'
-                    : 'var(--bg-secondary)',
-                  border: isToday ? '1px solid var(--border-strong)' : 'none',
-                  boxShadow: isToday && dayStat.minutes > 0 ? '0 2px 6px rgba(214, 184, 90, 0.3)' : 'none',
+                    ? 'var(--sage-dark)'
+                    : 'var(--bg-subtle)',
+                  border: isToday ? '1px solid var(--accent-hover)' : 'none',
                   transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                   cursor: 'pointer',
                 }} />
 
                 {/* Day Label */}
-                <span style={{
-                  fontSize: '12px',
+                <div style={{
+                  fontSize: '11px',
                   fontWeight: isToday ? 700 : 500,
-                  color: isToday ? 'var(--text-primary)' : 'var(--text-muted)',
-                  marginTop: '12px',
+                  color: isToday ? 'var(--text-1)' : 'var(--text-3)',
+                  marginTop: '10px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '3px',
                 }}>
                   {isToday ? 'Today' : dayStat.day}
                   {isToday && (
                     <span style={{
-                      width: '5px',
-                      height: '5px',
+                      width: '4px', height: '4px',
                       borderRadius: '50%',
-                      backgroundColor: 'var(--accent-mustard)',
+                      backgroundColor: 'var(--accent)',
                       display: 'inline-block',
                     }} />
                   )}
-                </span>
+                </div>
               </div>
             );
           })}
@@ -135,4 +132,3 @@ export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data }) => {
     </div>
   );
 };
-

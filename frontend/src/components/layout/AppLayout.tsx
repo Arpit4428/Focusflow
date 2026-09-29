@@ -30,60 +30,56 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   };
 
   const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/calendar', label: 'Calendar', icon: CalendarIcon },
-    { to: '/tasks', label: 'Tasks', icon: CheckSquare },
-    { to: '/subjects', label: 'Subjects', icon: BookOpen },
-    { to: '/focus', label: 'Focus Timer', icon: Timer },
-    { to: '/history', label: 'Focus History', icon: History },
-    { to: '/insights', label: 'Insights', icon: BarChart3 },
+    { to: '/dashboard',  label: 'Dashboard',     icon: LayoutDashboard },
+    { to: '/calendar',   label: 'Calendar',       icon: CalendarIcon },
+    { to: '/tasks',      label: 'Tasks',          icon: CheckSquare },
+    { to: '/subjects',   label: 'Subjects',       icon: BookOpen },
+    { to: '/focus',      label: 'Focus Timer',    icon: Timer },
+    { to: '/history',    label: 'Focus History',  icon: History },
+    { to: '/insights',   label: 'Insights',       icon: BarChart3 },
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
-      {/* Mobile Top Bar */}
-      <div className="mobile-header" style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '60px',
-        backgroundColor: 'var(--surface)',
-        borderBottom: '1px solid var(--border)',
-        padding: '0 20px',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        zIndex: 50,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg)' }}>
+
+      {/* ── Mobile Top Bar ── */}
+      <div
+        className="mobile-header"
+        style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0,
+          height: '60px',
+          backgroundColor: 'var(--surface)',
+          borderBottom: '1px solid var(--border)',
+          padding: '0 20px',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          zIndex: 50,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
           <div style={{
-            width: '26px',
-            height: '26px',
-            borderRadius: '6px',
-            backgroundColor: 'var(--accent-primary)',
-            color: 'var(--text-on-accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 800,
-            fontSize: '12px',
+            width: '28px', height: '28px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            ✦
+            <span style={{ color: '#fff', fontSize: '13px', fontWeight: 800, lineHeight: 1 }}>V</span>
           </div>
-          <span style={{ fontWeight: 700, fontSize: '17px', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+          <span style={{ fontWeight: 700, fontSize: '16px', letterSpacing: '-0.02em', color: 'var(--text-1)' }}>
             Veyro
           </span>
         </div>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle navigation menu"
-          style={{ background: 'none', color: 'var(--text-primary)', padding: '6px' }}
+          style={{ background: 'none', color: 'var(--text-1)', padding: '6px' }}
         >
           {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
-      {/* Mobile Backdrop Overlay */}
+      {/* ── Mobile Backdrop ── */}
       {mobileMenuOpen && (
         <div
           className="mobile-backdrop"
@@ -92,47 +88,44 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         />
       )}
 
-      {/* Sidebar Navigation */}
-      <aside className={`app-sidebar ${mobileMenuOpen ? 'open' : ''}`} style={{
-        width: '240px',
-        backgroundColor: 'var(--surface)',
-        borderRight: '1px solid var(--border)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        zIndex: 40,
-        transition: 'transform 0.25s ease',
-      }}>
+      {/* ── Sidebar ── */}
+      <aside
+        className={`app-sidebar ${mobileMenuOpen ? 'open' : ''}`}
+        style={{
+          width: '232px',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'fixed',
+          top: 0, bottom: 0, left: 0,
+          zIndex: 40,
+          transition: 'transform 0.22s cubic-bezier(0.4,0,0.2,1)',
+        }}
+      >
         {/* Brand */}
-        <div style={{ padding: '28px 24px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ padding: '24px 20px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '8px',
-            backgroundColor: 'var(--accent-primary)',
-            color: 'var(--text-on-accent)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 800,
-            fontSize: '13px',
-            boxShadow: '0 2px 8px rgba(82, 99, 77, 0.25)',
+            width: '30px', height: '30px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
           }}>
-            ✦
+            <span style={{ color: '#fff', fontSize: '14px', fontWeight: 800, lineHeight: 1 }}>V</span>
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: '18px', letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>
+            <div style={{ fontWeight: 700, fontSize: '17px', letterSpacing: '-0.03em', color: 'var(--text-1)', lineHeight: 1 }}>
               Veyro
             </div>
-            
+            <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.05em', color: 'var(--text-3)', textTransform: 'uppercase', marginTop: '2px' }}>
+              Focus Studio
+            </div>
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <nav style={{ flex: 1, padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ height: '1px', backgroundColor: 'var(--border)', margin: '0 20px' }} />
+
+        {/* Navigation */}
+        <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -143,29 +136,33 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 style={({ isActive }) => ({
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
-                  padding: '10px 14px',
-                  borderRadius: 'var(--radius-pill)',
-                  fontSize: '14px',
-                  fontWeight: isActive ? 600 : 500,
-                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  backgroundColor: isActive ? 'var(--surface-sage)' : 'transparent',
+                  gap: '10px',
+                  padding: '9px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '13.5px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? 'var(--text-1)' : 'var(--text-2)',
+                  backgroundColor: isActive ? 'var(--accent-light)' : 'transparent',
                   transition: 'var(--transition)',
+                  textDecoration: 'none',
+                  position: 'relative',
                 })}
               >
                 {({ isActive }) => (
                   <>
-                    <Icon size={18} color={isActive ? 'var(--text-primary)' : 'var(--text-muted)'} />
-                    <span>{item.label}</span>
                     {isActive && (
                       <span style={{
-                        marginLeft: 'auto',
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--accent-mustard)',
+                        position: 'absolute',
+                        left: 0,
+                        top: '6px',
+                        bottom: '6px',
+                        width: '3px',
+                        borderRadius: '0 3px 3px 0',
+                        backgroundColor: 'var(--accent)',
                       }} />
                     )}
+                    <Icon size={16} color={isActive ? 'var(--accent)' : 'var(--text-3)'} strokeWidth={isActive ? 2.2 : 1.8} />
+                    <span>{item.label}</span>
                   </>
                 )}
               </NavLink>
@@ -173,34 +170,37 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           })}
         </nav>
 
-        {/* User Profile Footer */}
-        <div style={{
-          padding: '16px',
-          margin: '12px',
-          borderRadius: 'var(--radius-md)',
-          backgroundColor: 'var(--bg-primary)',
-          border: '1px solid var(--border)',
-        }}>
+        <div style={{ height: '1px', backgroundColor: 'var(--border)', margin: '0 20px' }} />
+
+        {/* User Footer */}
+        <div style={{ padding: '14px 16px 18px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
             <div style={{
-              width: '32px',
-              height: '32px',
+              width: '32px', height: '32px',
               borderRadius: '50%',
-              backgroundColor: 'var(--surface-sage)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-primary)',
-              fontWeight: 600,
+              backgroundColor: 'var(--sage)',
+              border: '1.5px solid var(--border-strong)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--accent)',
+              fontWeight: 700,
               fontSize: '13px',
+              flexShrink: 0,
             }}>
               {user?.name?.charAt(0).toUpperCase() || 'S'}
             </div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ overflow: 'hidden', flex: 1 }}>
+              <div style={{
+                fontSize: '13px', fontWeight: 600,
+                color: 'var(--text-1)',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>
                 {user?.name || 'Student'}
               </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{
+                fontSize: '11px',
+                color: 'var(--text-3)',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>
                 {user?.email}
               </div>
             </div>
@@ -215,22 +215,24 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               justifyContent: 'center',
               gap: '6px',
               backgroundColor: 'transparent',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border-strong)',
-              padding: '6px',
-              borderRadius: 'var(--radius-pill)',
+              color: 'var(--text-3)',
+              border: '1px solid var(--border)',
+              padding: '7px',
+              borderRadius: 'var(--radius-md)',
               fontSize: '12px',
-              fontWeight: 500,
+              fontWeight: 600,
               cursor: 'pointer',
               transition: 'var(--transition)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--accent-coral-soft)';
-              e.currentTarget.style.color = 'var(--accent-coral-text)';
+              e.currentTarget.style.backgroundColor = 'var(--coral-light)';
+              e.currentTarget.style.color = 'var(--coral-text)';
+              e.currentTarget.style.borderColor = 'rgba(232,123,106,0.35)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.color = 'var(--text-3)';
+              e.currentTarget.style.borderColor = 'var(--border)';
             }}
           >
             <LogOut size={13} />
@@ -239,18 +241,22 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="app-main-content" style={{
-        flex: 1,
-        marginLeft: '240px',
-        padding: '40px 48px',
-        minHeight: '100vh',
-        maxWidth: '1440px',
-      }}>
+      {/* ── Main Content ── */}
+      <main
+        className="app-main-content"
+        style={{
+          flex: 1,
+          marginLeft: '232px',
+          padding: '40px 48px',
+          minHeight: '100vh',
+          maxWidth: '1600px',
+          animation: 'fadeIn 0.25s ease-out',
+        }}
+      >
         {children}
       </main>
 
-      {/* Floating Persistent Mini Focus Timer */}
+      {/* ── Floating Mini Focus Timer ── */}
       <MiniFocusTimer />
     </div>
   );
