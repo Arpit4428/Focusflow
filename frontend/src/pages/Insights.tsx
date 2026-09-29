@@ -119,27 +119,25 @@ export const Insights: React.FC = () => {
           }}>
             {/* Total Focus — Primary Hero Metric */}
             <div style={{
-              backgroundColor: 'var(--accent)',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border)',
               borderRadius: 'var(--radius-xl)',
               padding: '28px 24px',
-              color: '#fff',
+              boxShadow: 'var(--shadow-sm)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
               minHeight: '160px',
-              position: 'relative',
-              overflow: 'hidden',
             }}>
-              <div style={{ position: 'absolute', bottom: '-30px', right: '-30px', width: '120px', height: '120px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', opacity: 0.8 }}>
-                <Clock size={13} />
-                <span>Total Focus Time</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <Clock size={14} color="var(--text-3)" />
+                <span className="text-meta">Total Focus Time</span>
               </div>
               <div>
-                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: 'clamp(32px, 5vw, 44px)', fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '6px' }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '32px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-1)', lineHeight: 1, marginBottom: '6px' }}>
                   {formatDuration(data.totalFocusSeconds)}
                 </div>
-                <div style={{ fontSize: '12px', opacity: 0.75 }}>All-time cumulative study volume</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>All-time cumulative study volume</div>
               </div>
             </div>
 
@@ -197,25 +195,26 @@ export const Insights: React.FC = () => {
 
             {/* Top Subject */}
             <div style={{
-              backgroundColor: 'var(--sage)',
+              backgroundColor: 'var(--surface)',
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius-xl)',
               padding: '28px 24px',
+              boxShadow: 'var(--shadow-sm)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
               minHeight: '160px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                <Star size={14} color="var(--text-2)" />
+                <Star size={14} color="var(--text-3)" />
                 <span className="text-meta">Top Subject</span>
               </div>
               <div>
                 <div style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-1)', marginBottom: '4px', lineHeight: 1.2 }}>
                   {data.mostFocusedSubject || 'General Study'}
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-2)', fontWeight: 500 }}>
-                  Peak day: <strong>{data.mostProductiveDayOfWeek || 'N/A'}</strong>
+                <div style={{ fontSize: '12px', color: 'var(--text-3)', fontWeight: 500 }}>
+                  Peak day: <strong style={{ color: 'var(--text-2)' }}>{data.mostProductiveDayOfWeek || 'N/A'}</strong>
                 </div>
               </div>
             </div>
