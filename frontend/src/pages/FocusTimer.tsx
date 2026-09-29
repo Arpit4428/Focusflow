@@ -23,9 +23,6 @@ export const FocusTimer: React.FC = () => {
   const {
     status,
     formattedTime,
-    elapsedSeconds,
-    targetDurationSeconds,
-    setTargetDuration,
     selectedSubjectId,
     selectedSubjectName,
     selectedSubjectColor,
@@ -101,21 +98,9 @@ export const FocusTimer: React.FC = () => {
     return `${sec}s`;
   };
 
-  // Ensure default session duration (25m) when idle
-  useEffect(() => {
-    if (status === 'IDLE' && targetDurationSeconds !== 25 * 60) {
-      setTargetDuration(25 * 60);
-    }
-  }, [status, targetDurationSeconds, setTargetDuration]);
-
   const handleStart = () => {
     if (!selectedSubjectId) {
       setFeedback({ type: 'error', message: 'Please select a subject before starting a focus session.' });
-      return;
-    }
-
-    if (targetDurationSeconds < 10) {
-      setFeedback({ type: 'error', message: 'Minimum focus session duration is 10 seconds.' });
       return;
     }
 
@@ -129,8 +114,15 @@ export const FocusTimer: React.FC = () => {
   const handleStop = async () => {
     setFeedback(null);
     try {
-      await stopAndSave();
-      setFeedback({ type: 'success', message: 'Session saved! Great work.' });
+      const completed = await stopAndSave();
+      if (completed && completed.durationSeconds >= 1) {
+        setFeedback({
+          type: 'success',
+          message: `Focus session recorded: ${formatSecondsHuman(completed.durationSeconds)}! Great work.`,
+        });
+      } else {
+        setFeedback({ type: 'success', message: 'Focus session ended.' });
+      }
       await fetchTodaySessions();
     } catch (err) {
       const apiErr = err as ApiError;
@@ -154,9 +146,6 @@ export const FocusTimer: React.FC = () => {
   const isPaused = status === 'PAUSED';
   const isCompleted = status === 'COMPLETED';
   const isActive = isRunning || isPaused;
-
-  const duration = targetDurationSeconds > 0 ? targetDurationSeconds : 25 * 60;
-  const progressPercent = Math.min(100, Math.round((elapsedSeconds / duration) * 100));
 
   return (
     <div className="page-enter" style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -285,27 +274,6 @@ export const FocusTimer: React.FC = () => {
               )}
             </div>
           </div>
-
-          {/* Progress track */}
-          {isActive && (
-            <div
-              style={{
-                height: '3px',
-                width: '100%',
-                backgroundColor: 'var(--border-subtle)',
-                overflow: 'hidden',
-              }}
-            >
-              <div
-                style={{
-                  height: '100%',
-                  width: `${progressPercent}%`,
-                  backgroundColor: isRunning ? 'var(--accent-olive)' : 'var(--accent-amber)',
-                  transition: 'width 0.4s ease, background-color 0.3s ease',
-                }}
-              />
-            </div>
-          )}
         </div>
 
         <div style={{ padding: '48px 36px 44px' }}>

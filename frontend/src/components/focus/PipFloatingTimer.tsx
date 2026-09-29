@@ -11,10 +11,8 @@ export const PipFloatingTimer: React.FC<PipFloatingTimerProps> = ({ onClose, onF
   const {
     status,
     formattedTime,
-    elapsedSeconds,
     selectedSubjectName,
     selectedSubjectColor,
-    targetDurationSeconds,
     pause,
     resume,
     stopAndSave,
@@ -22,9 +20,6 @@ export const PipFloatingTimer: React.FC<PipFloatingTimerProps> = ({ onClose, onF
 
   const isRunning = status === 'RUNNING';
   const isPaused = status === 'PAUSED';
-
-  const duration = targetDurationSeconds > 0 ? targetDurationSeconds : 25 * 60;
-  const progressPercent = Math.min(100, Math.round((elapsedSeconds / duration) * 100));
 
   const handleTogglePlayPause = () => {
     if (isRunning) {
@@ -178,28 +173,6 @@ export const PipFloatingTimer: React.FC<PipFloatingTimerProps> = ({ onClose, onF
           }}
         >
           {formattedTime}
-        </div>
-
-        {/* Thin Animated Progress Line */}
-        <div
-          style={{
-            width: '180px',
-            height: '3px',
-            backgroundColor: 'var(--border-subtle)',
-            borderRadius: '2px',
-            margin: '8px auto 0',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              height: '100%',
-              width: `${progressPercent}%`,
-              backgroundColor: isRunning ? 'var(--accent-olive)' : 'var(--accent-amber)',
-              borderRadius: '2px',
-              transition: 'width 0.4s ease, background-color 0.3s ease',
-            }}
-          />
         </div>
       </div>
 
