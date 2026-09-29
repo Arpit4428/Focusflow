@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { Modal } from '../components/common/Modal';
 import { taskService } from '../services/taskService';
 import { subjectService } from '../services/subjectService';
 import type { Task, Priority, TaskStatus } from '../types/task';
@@ -406,166 +407,167 @@ export const Tasks: React.FC = () => {
       )}
 
       {/* Create / Edit Modal */}
-      {(isCreateOpen || editingTask) && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '19px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-1)' }}>
-                {editingTask ? 'Edit Task' : 'Create New Task'}
-              </h2>
-              <button
-                onClick={() => { setIsCreateOpen(false); setEditingTask(null); }}
-                aria-label="Close modal"
-                style={{ background: 'none', color: 'var(--text-3)', padding: '5px', borderRadius: 'var(--radius-sm)' }}
-              >
-                <X size={18} />
-              </button>
+      <Modal
+        isOpen={isCreateOpen || !!editingTask}
+        onClose={() => { setIsCreateOpen(false); setEditingTask(null); }}
+        maxWidth="520px"
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '19px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+            {editingTask ? 'Edit Task' : 'Create New Task'}
+          </h2>
+          <button
+            onClick={() => { setIsCreateOpen(false); setEditingTask(null); }}
+            aria-label="Close modal"
+            style={{ background: 'none', color: 'var(--text-muted)', padding: '5px', borderRadius: 'var(--radius-sm)' }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {formError && (
+          <div className="alert-banner alert-danger">
+            <AlertCircle size={14} />
+            <span>{formError}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSaveTask}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="taskTitle">Task Title *</label>
+            <input
+              id="taskTitle" type="text" className="form-input"
+              placeholder="e.g. Chapter 4 Practice Problems"
+              value={formTitle}
+              onChange={(e) => setFormTitle(e.target.value)}
+              required autoFocus
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div className="form-group">
+              <label className="form-label" htmlFor="taskSubject">Subject *</label>
+              {subjects.length === 0 ? (
+                <div style={{
+                  padding: '9px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  fontSize: '13px', color: 'var(--text-secondary)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  border: '1.5px solid var(--border)',
+                }}>
+                  <span>No subjects yet.</span>
+                  <Link to="/subjects" style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '12px' }}>
+                    Create Subject
+                  </Link>
+                </div>
+              ) : (
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <select
+                    id="taskSubject" className="form-input"
+                    value={formSubjectId}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      setFormSubjectId(selectedId);
+                      const sub = subjects.find((s) => s.id === selectedId);
+                      if (sub) setFormSubject(sub.name);
+                    }}
+                    required
+                    style={{ paddingLeft: '32px' }}
+                  >
+                    <option value="" disabled>Select a subject...</option>
+                    {formSubject && !subjects.some((s) => s.id === formSubjectId) && (
+                      <option value="">{formSubject} (Legacy)</option>
+                    )}
+                    {subjects.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <div style={{
+                    position: 'absolute', left: '12px',
+                    width: '10px', height: '10px', borderRadius: '50%',
+                    backgroundColor: subjects.find((s) => s.id === formSubjectId)?.color || 'var(--accent-olive)',
+                    border: '1px solid rgba(0,0,0,0.12)',
+                    pointerEvents: 'none',
+                  }} />
+                </div>
+              )}
             </div>
 
-            {formError && (
-              <div className="alert-banner alert-danger">
-                <AlertCircle size={14} />
-                <span>{formError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveTask}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="taskTitle">Task Title *</label>
-                <input
-                  id="taskTitle" type="text" className="form-input"
-                  placeholder="e.g. Chapter 4 Practice Problems"
-                  value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
-                  required autoFocus
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="taskSubject">Subject *</label>
-                  {subjects.length === 0 ? (
-                    <div style={{
-                      padding: '9px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      backgroundColor: 'var(--bg-subtle)',
-                      fontSize: '13px', color: 'var(--text-2)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      border: '1.5px solid var(--border)',
-                    }}>
-                      <span>No subjects yet.</span>
-                      <Link to="/subjects" style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '12px' }}>
-                        Create Subject
-                      </Link>
-                    </div>
-                  ) : (
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                      <select
-                        id="taskSubject" className="form-input"
-                        value={formSubjectId}
-                        onChange={(e) => {
-                          const selectedId = e.target.value;
-                          setFormSubjectId(selectedId);
-                          const sub = subjects.find((s) => s.id === selectedId);
-                          if (sub) setFormSubject(sub.name);
-                        }}
-                        required
-                        style={{ paddingLeft: '32px' }}
-                      >
-                        <option value="" disabled>Select a subject...</option>
-                        {formSubject && !subjects.some((s) => s.id === formSubjectId) && (
-                          <option value="">{formSubject} (Legacy)</option>
-                        )}
-                        {subjects.map((s) => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                      </select>
-                      <div style={{
-                        position: 'absolute', left: '12px',
-                        width: '10px', height: '10px', borderRadius: '50%',
-                        backgroundColor: subjects.find((s) => s.id === formSubjectId)?.color || 'var(--sage-dark)',
-                        border: '1px solid rgba(0,0,0,0.12)',
-                        pointerEvents: 'none',
-                      }} />
-                    </div>
-                  )}
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" htmlFor="taskPriority">Priority *</label>
-                  <select
-                    id="taskPriority" className="form-input"
-                    value={formPriority}
-                    onChange={(e) => setFormPriority(e.target.value as Priority)}
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="taskDueDate">Due Date &amp; Time *</label>
-                <input
-                  id="taskDueDate" type="datetime-local" className="form-input"
-                  value={formDueDate}
-                  onChange={(e) => setFormDueDate(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="taskDescription">Description (Optional)</label>
-                <textarea
-                  id="taskDescription" className="form-input" rows={3}
-                  placeholder="Key notes, reference pages, or assignment instructions..."
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => { setIsCreateOpen(false); setEditingTask(null); }}
-                  className="btn btn-outline" disabled={isSaving}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                  {isSaving ? 'Saving...' : editingTask ? 'Update Task' : 'Create Task'}
-                </button>
-              </div>
-            </form>
+            <div className="form-group">
+              <label className="form-label" htmlFor="taskPriority">Priority *</label>
+              <select
+                id="taskPriority" className="form-input"
+                value={formPriority}
+                onChange={(e) => setFormPriority(e.target.value as Priority)}
+              >
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+              </select>
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="taskDueDate">Due Date &amp; Time *</label>
+            <input
+              id="taskDueDate" type="datetime-local" className="form-input"
+              value={formDueDate}
+              onChange={(e) => setFormDueDate(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="taskDescription">Description (Optional)</label>
+            <textarea
+              id="taskDescription" className="form-input" rows={3}
+              placeholder="Key notes, reference pages, or assignment instructions..."
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' }}>
+            <button
+              type="button"
+              onClick={() => { setIsCreateOpen(false); setEditingTask(null); }}
+              className="btn btn-outline" disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={isSaving}>
+              {isSaving ? 'Saving...' : editingTask ? 'Update Task' : 'Create Task'}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '380px', textAlign: 'center' }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '50%',
-              backgroundColor: 'var(--coral-light)', color: 'var(--coral-text)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 16px',
-            }}>
-              <Trash2 size={22} />
-            </div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px', color: 'var(--text-1)' }}>Delete Task?</h3>
-            <p style={{ color: 'var(--text-2)', fontSize: '13px', marginBottom: '24px', lineHeight: 1.5 }}>
-              Are you sure you want to delete this task? This action cannot be undone.
-            </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={() => setDeleteConfirmId(null)} className="btn btn-outline">Cancel</button>
-              <button onClick={() => handleDeleteTask(deleteConfirmId)} className="btn btn-danger">Yes, Delete</button>
-            </div>
-          </div>
+      <Modal
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        maxWidth="380px"
+        style={{ textAlign: 'center' }}
+      >
+        <div style={{
+          width: '48px', height: '48px', borderRadius: '50%',
+          backgroundColor: 'var(--accent-coral-subtle)', color: 'var(--accent-coral-text)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 16px',
+        }}>
+          <Trash2 size={22} />
         </div>
-      )}
+        <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px', color: 'var(--text-primary)' }}>Delete Task?</h3>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '24px', lineHeight: 1.5 }}>
+          Are you sure you want to delete this task? This action cannot be undone.
+        </p>
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+          <button onClick={() => setDeleteConfirmId(null)} className="btn btn-outline">Cancel</button>
+          <button onClick={() => handleDeleteTask(deleteConfirmId!)} className="btn btn-danger">Yes, Delete</button>
+        </div>
+      </Modal>
     </div>
   );
 };

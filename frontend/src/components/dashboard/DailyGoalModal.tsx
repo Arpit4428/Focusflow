@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Modal } from '../common/Modal';
 import { X, Clock, AlertCircle } from 'lucide-react';
 
 interface DailyGoalModalProps {
@@ -96,39 +97,38 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content" style={{ maxWidth: '420px', padding: '28px' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '34px', height: '34px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--sage)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'var(--accent)',
-            }}>
-              <Clock size={16} />
-            </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-1)', margin: 0 }}>
-              Daily Focus Goal
-            </h3>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="440px">
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '34px', height: '34px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--bg-subtle)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-primary)',
+          }}>
+            <Clock size={16} />
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            aria-label="Close"
-            style={{
-              background: 'none', padding: '5px',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-3)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center',
-            }}
-          >
-            <X size={18} />
-          </button>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>
+            Daily Focus Goal
+          </h3>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={loading}
+          aria-label="Close"
+          style={{
+            background: 'none', padding: '5px',
+            borderRadius: 'var(--radius-sm)',
+            color: 'var(--text-muted)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center',
+          }}
+        >
+          <X size={18} />
+        </button>
+      </div>
 
         <form onSubmit={handleSubmit}>
           {/* Quick Presets */}
@@ -247,7 +247,6 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };

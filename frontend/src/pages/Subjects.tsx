@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Modal } from '../components/common/Modal';
 import { subjectService } from '../services/subjectService';
 import type { Subject, SubjectRequest } from '../types/subject';
 import type { ApiError } from '../types/auth';
@@ -350,135 +351,127 @@ export const Subjects: React.FC = () => {
       )}
 
       {/* ── Create / Edit Modal ── */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '19px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-1)' }}>
-                {editingSubject ? 'Edit Subject' : 'New Academic Subject'}
-              </h2>
-              <button
-                onClick={closeModal}
-                aria-label="Close"
-                style={{ background: 'none', color: 'var(--text-3)', padding: '5px', borderRadius: 'var(--radius-sm)' }}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {formError && (
-              <div className="alert-banner alert-danger">
-                <AlertCircle size={14} />
-                <span>{formError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="subjectName">Subject Name *</label>
-                <input
-                  id="subjectName"
-                  type="text"
-                  required
-                  maxLength={50}
-                  className="form-input"
-                  placeholder="e.g., Computer Networks, Algorithms"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  autoFocus
-                />
-              </div>
-
-              {/* Color Swatch Picker */}
-              <div className="form-group">
-                <label className="form-label">Subject Color</label>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {PRESET_COLORS.map((c) => {
-                    const isSelected = formColor.toUpperCase() === c.value.toUpperCase();
-                    return (
-                      <button
-                        key={c.value}
-                        type="button"
-                        onClick={() => setFormColor(c.value)}
-                        style={{
-                          width: '34px', height: '34px',
-                          borderRadius: '50%',
-                          backgroundColor: c.value,
-                          border: isSelected ? '2.5px solid var(--text-1)' : '2px solid transparent',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer',
-                          boxShadow: isSelected ? '0 0 0 2px rgba(26,26,24,0.15)' : 'none',
-                          transition: 'var(--transition)',
-                        }}
-                        title={c.label}
-                      >
-                        {isSelected && <Check size={14} color="#fff" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="subjectDesc">Description (Optional)</label>
-                <textarea
-                  id="subjectDesc"
-                  rows={3}
-                  maxLength={500}
-                  className="form-input"
-                  placeholder="Course topics, professor, or module notes..."
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
-                <button type="button" onClick={closeModal} className="btn btn-outline" disabled={submitting}>Cancel</button>
-                <button type="submit" className="btn btn-primary" disabled={submitting}>
-                  {submitting ? 'Saving...' : editingSubject ? 'Save Changes' : 'Create Subject'}
-                </button>
-              </div>
-            </form>
-          </div>
+      <Modal isOpen={isModalOpen} onClose={closeModal} maxWidth="520px">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '19px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+            {editingSubject ? 'Edit Subject' : 'New Academic Subject'}
+          </h2>
+          <button
+            onClick={closeModal}
+            aria-label="Close"
+            style={{ background: 'none', color: 'var(--text-muted)', padding: '5px', borderRadius: 'var(--radius-sm)' }}
+          >
+            <X size={18} />
+          </button>
         </div>
-      )}
+
+        {formError && (
+          <div className="alert-banner alert-danger">
+            <AlertCircle size={14} />
+            <span>{formError}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="subjectName">Subject Name *</label>
+            <input
+              id="subjectName"
+              type="text"
+              required
+              maxLength={50}
+              className="form-input"
+              placeholder="e.g., Computer Networks, Algorithms"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          {/* Color Swatch Picker */}
+          <div className="form-group">
+            <label className="form-label">Subject Color</label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {PRESET_COLORS.map((c) => {
+                const isSelected = formColor.toUpperCase() === c.value.toUpperCase();
+                return (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setFormColor(c.value)}
+                    style={{
+                      width: '34px', height: '34px',
+                      borderRadius: '50%',
+                      backgroundColor: c.value,
+                      border: isSelected ? '2.5px solid var(--text-primary)' : '2px solid transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: isSelected ? '0 0 0 2px rgba(26,26,24,0.15)' : 'none',
+                      transition: 'var(--transition-fast)',
+                    }}
+                    title={c.label}
+                  >
+                    {isSelected && <Check size={14} color="#fff" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="subjectDesc">Description (Optional)</label>
+            <textarea
+              id="subjectDesc"
+              rows={3}
+              maxLength={500}
+              className="form-input"
+              placeholder="Course topics, professor, or module notes..."
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+            <button type="button" onClick={closeModal} className="btn btn-outline" disabled={submitting}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? 'Saving...' : editingSubject ? 'Save Changes' : 'Create Subject'}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* ── Delete Confirmation Modal ── */}
-      {subjectToDelete && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center' }}>
-            <div style={{
-              width: '48px', height: '48px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--coral-light)',
-              color: 'var(--coral-text)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 16px',
-            }}>
-              <Trash2 size={22} />
-            </div>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px', color: 'var(--text-1)' }}>Delete Subject?</h3>
-            <p style={{ color: 'var(--text-2)', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
-              Delete <strong>{subjectToDelete.name}</strong>? This cannot be undone.
-            </p>
-
-            {deleteError && (
-              <div className="alert-banner alert-danger">
-                <AlertCircle size={14} />
-                <span style={{ fontSize: '12px' }}>{deleteError}</span>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-              <button type="button" onClick={() => setSubjectToDelete(null)} className="btn btn-outline" disabled={deleting}>Cancel</button>
-              <button type="button" onClick={confirmDelete} className="btn btn-danger" disabled={deleting}>
-                {deleting ? 'Deleting...' : 'Confirm Delete'}
-              </button>
-            </div>
-          </div>
+      <Modal isOpen={!!subjectToDelete} onClose={() => setSubjectToDelete(null)} maxWidth="400px" style={{ textAlign: 'center' }}>
+        <div style={{
+          width: '48px', height: '48px',
+          borderRadius: '50%',
+          backgroundColor: 'var(--accent-coral-subtle)',
+          color: 'var(--accent-coral-text)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 16px',
+        }}>
+          <Trash2 size={22} />
         </div>
-      )}
+        <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px', color: 'var(--text-primary)' }}>Delete Subject?</h3>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
+          Delete <strong>{subjectToDelete?.name}</strong>? This cannot be undone.
+        </p>
+
+        {deleteError && (
+          <div className="alert-banner alert-danger">
+            <AlertCircle size={14} />
+            <span style={{ fontSize: '12px' }}>{deleteError}</span>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+          <button type="button" onClick={() => setSubjectToDelete(null)} className="btn btn-outline" disabled={deleting}>Cancel</button>
+          <button type="button" onClick={confirmDelete} className="btn btn-danger" disabled={deleting}>
+            {deleting ? 'Deleting...' : 'Confirm Delete'}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
