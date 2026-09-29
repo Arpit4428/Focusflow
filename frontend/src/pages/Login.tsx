@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { ApiError } from '../types/auth';
-import { LogIn, AlertCircle } from 'lucide-react';
+import { LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,121 +41,116 @@ export const Login: React.FC = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: 'var(--bg-primary)',
+      backgroundColor: 'var(--bg)',
       display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
+      alignItems: 'stretch',
     }}>
+      {/* ── Left Brand Panel ── */}
       <div style={{
-        width: '100%',
-        maxWidth: '1020px',
-        minHeight: '620px',
-        backgroundColor: 'var(--surface)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-card)',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        flex: '1 1 45%',
+        backgroundColor: 'var(--sage)',
+        padding: 'clamp(40px, 6vw, 80px)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        position: 'relative',
         overflow: 'hidden',
+        minHeight: '100vh',
       }}>
-        {/* Left Hero / Brand Showcase */}
-        <div style={{
-          backgroundColor: 'var(--surface-sage)',
-          padding: '48px 40px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          position: 'relative',
-        }}>
-          <div>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 12px',
-              borderRadius: 'var(--radius-pill)',
-              backgroundColor: 'rgba(251, 249, 243, 0.85)',
-              fontSize: '12px',
-              fontWeight: 600,
-              color: 'var(--text-primary)',
-              marginBottom: '32px',
-            }}>
-              <span style={{ color: 'var(--text-primary)' }}>✦</span>
-              <span>Academic Focus Studio</span>
-            </div>
-
-            <h2 style={{
-              fontSize: 'clamp(32px, 4vw, 42px)',
-              fontWeight: 600,
-              lineHeight: 1.15,
-              letterSpacing: '-0.03em',
-              color: 'var(--text-primary)',
-              marginBottom: '16px',
-            }}>
-              Quiet Focus for Academic Clarity
-            </h2>
-
-            <p style={{
-              fontSize: '15px',
-              color: 'var(--text-secondary)',
-              lineHeight: 1.6,
-              maxWidth: '380px',
-            }}>
-              Track study hours, reflect on progress, and build deep study habits with zero clutter.
-            </p>
-          </div>
-
+        {/* Brand mark */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            marginTop: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
+            width: '36px', height: '36px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{
-            }} />
-            
+            <span style={{ color: '#fff', fontWeight: 800, fontSize: '16px' }}>V</span>
           </div>
+          <span style={{ fontWeight: 700, fontSize: '18px', letterSpacing: '-0.02em', color: 'var(--text-1)' }}>Veyro</span>
         </div>
 
-        {/* Right Form Container */}
+        {/* Hero text */}
+        <div style={{ maxWidth: '420px' }}>
+          <div style={{
+            fontSize: '11px', fontWeight: 700,
+            letterSpacing: '0.1em', textTransform: 'uppercase',
+            color: 'var(--accent)', marginBottom: '20px',
+          }}>
+            Academic Focus Studio
+          </div>
+          <h1 style={{
+            fontSize: 'clamp(32px, 4.5vw, 52px)',
+            fontWeight: 700,
+            letterSpacing: '-0.04em',
+            lineHeight: 1.1,
+            color: 'var(--text-1)',
+            marginBottom: '20px',
+          }}>
+            Quiet focus for academic clarity.
+          </h1>
+          <p style={{
+            fontSize: '16px',
+            color: 'var(--text-2)',
+            lineHeight: 1.65,
+            maxWidth: '360px',
+          }}>
+            Track study hours, reflect on progress, and build deep focus habits — all in one clean workspace.
+          </p>
+        </div>
+
+        {/* Decorative background shape */}
         <div style={{
-          padding: '52px 48px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          backgroundColor: 'var(--surface)',
-        }}>
-          <div style={{ marginBottom: '32px' }}>
-            <h1 style={{
-              fontSize: '28px',
-              fontWeight: 600,
-              letterSpacing: '-0.02em',
-              color: 'var(--text-primary)',
+          position: 'absolute',
+          bottom: '-60px', right: '-60px',
+          width: '320px', height: '320px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(74,94,69,0.07)',
+          pointerEvents: 'none',
+        }} />
+      </div>
+
+      {/* ── Right Form Panel ── */}
+      <div style={{
+        flex: '1 1 55%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'clamp(32px, 5vw, 80px)',
+        backgroundColor: 'var(--surface)',
+        minHeight: '100vh',
+      }}>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+          <div style={{ marginBottom: '36px' }}>
+            <h2 style={{
+              fontSize: '28px', fontWeight: 700,
+              letterSpacing: '-0.03em',
+              color: 'var(--text-1)',
               marginBottom: '8px',
             }}>
               Sign in to Veyro
-            </h1>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-              Enter your student credentials to resume your workspace.
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--text-2)', lineHeight: 1.5 }}>
+              Enter your credentials to resume your workspace.
             </p>
           </div>
 
           {error && (
             <div className="alert-banner alert-danger">
-              <AlertCircle size={18} style={{ flexShrink: 0 }} />
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
               <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label" htmlFor="email">Email Address</label>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" htmlFor="email">Email address</label>
               <input
                 id="email"
                 type="email"
                 className="form-input"
-                placeholder="student@example.com"
+                placeholder="student@university.edu"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -162,61 +158,73 @@ export const Login: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label" htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                className="form-input"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-input"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  style={{ paddingRight: '44px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((p) => !p)}
+                  style={{
+                    position: 'absolute', right: '12px', top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none', color: 'var(--text-3)', padding: '4px',
+                  }}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
               className="btn btn-primary"
               disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '14px',
-                marginTop: '12px',
-                fontSize: '15px',
-              }}
+              style={{ width: '100%', padding: '13px', fontSize: '14.5px', marginTop: '4px' }}
             >
               {isSubmitting ? (
                 <>
                   <div style={{
-                    width: '16px',
-                    height: '16px',
-                    border: '2px solid rgba(251,249,243,0.3)',
-                    borderTopColor: '#FBF9F3',
+                    width: '15px', height: '15px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTopColor: '#fff',
                     borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
+                    animation: 'spin 0.8s linear infinite',
                   }} />
                   <span>Signing in...</span>
                 </>
               ) : (
                 <>
                   <span>Sign In</span>
-                  <LogIn size={16} />
+                  <LogIn size={15} />
                 </>
               )}
             </button>
           </form>
 
           <div style={{
-            marginTop: '32px',
-            paddingTop: '20px',
+            marginTop: '28px',
+            paddingTop: '22px',
             borderTop: '1px solid var(--border)',
             fontSize: '13px',
-            color: 'var(--text-secondary)',
+            color: 'var(--text-2)',
             textAlign: 'center',
           }}>
-            Don't have an account yet?{' '}
-            <Link to="/register" style={{ fontWeight: 600, color: 'var(--text-primary)', textDecoration: 'underline' }}>
+            Don't have an account?{' '}
+            <Link
+              to="/register"
+              style={{ fontWeight: 700, color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+            >
               Create account
             </Link>
           </div>
@@ -225,4 +233,3 @@ export const Login: React.FC = () => {
     </div>
   );
 };
-

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Modal } from '../common/Modal';
 import { X, Clock, AlertCircle } from 'lucide-react';
 
 interface DailyGoalModalProps {
@@ -9,12 +10,12 @@ interface DailyGoalModalProps {
 }
 
 const PRESETS = [
-  { label: '30m', minutes: 30 },
-  { label: '1h', minutes: 60 },
+  { label: '30m',    minutes: 30 },
+  { label: '1h',     minutes: 60 },
   { label: '1h 30m', minutes: 90 },
-  { label: '2h', minutes: 120 },
-  { label: '3h', minutes: 180 },
-  { label: '4h', minutes: 240 },
+  { label: '2h',     minutes: 120 },
+  { label: '3h',     minutes: 180 },
+  { label: '4h',     minutes: 240 },
 ];
 
 export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
@@ -96,75 +97,44 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(52, 59, 47, 0.45)',
-      backdropFilter: 'blur(3px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 100,
-      padding: '20px',
-    }}>
-      <div style={{
-        backgroundColor: 'var(--surface)',
-        border: '1px solid var(--border-strong)',
-        borderRadius: 'var(--radius-lg)',
-        width: '100%',
-        maxWidth: '440px',
-        boxShadow: 'var(--shadow-float)',
-        padding: '28px',
-        animation: 'scaleUp 0.15s ease-out',
-      }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--surface-sage)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-primary)',
-            }}>
-              <Clock size={16} />
-            </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>
-              Daily Focus Goal
-            </h3>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="440px">
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '34px', height: '34px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--bg-subtle)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-primary)',
+          }}>
+            <Clock size={16} />
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            aria-label="Close"
-            style={{
-              background: 'none',
-              padding: '6px',
-              borderRadius: '50%',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <X size={18} />
-          </button>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0 }}>
+            Daily Focus Goal
+          </h3>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={loading}
+          aria-label="Close"
+          style={{
+            background: 'none', padding: '5px',
+            borderRadius: 'var(--radius-sm)',
+            color: 'var(--text-muted)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center',
+          }}
+        >
+          <X size={18} />
+        </button>
+      </div>
 
         <form onSubmit={handleSubmit}>
           {/* Quick Presets */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '8px' }}>
-              Quick Presets
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            <label className="form-label">Quick Presets</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '7px' }}>
               {PRESETS.map((p) => {
                 const isSelected = totalMinutes === p.minutes;
                 return (
@@ -174,13 +144,15 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
                     onClick={() => handleSelectPreset(p.minutes)}
                     disabled={loading}
                     style={{
-                      padding: '8px 12px',
+                      padding: '8px 10px',
                       fontSize: '13px',
+                      fontFamily: 'var(--font-digits)',
+                      fontVariantNumeric: 'tabular-nums',
                       fontWeight: isSelected ? 700 : 500,
-                      borderRadius: 'var(--radius-pill)',
-                      backgroundColor: isSelected ? 'var(--accent-mustard)' : 'var(--bg-secondary)',
-                      color: 'var(--text-primary)',
-                      border: isSelected ? '1px solid var(--accent-mustard-border)' : '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: isSelected ? 'var(--text-1)' : 'var(--bg-subtle)',
+                      color: isSelected ? '#fff' : 'var(--text-1)',
+                      border: isSelected ? 'none' : '1px solid var(--border)',
                       cursor: 'pointer',
                       transition: 'var(--transition)',
                     }}
@@ -192,103 +164,69 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
             </div>
           </div>
 
-          {/* Custom Time Input (Hours & Minutes) */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '8px' }}>
-              Custom Duration
-            </label>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="number"
-                    min="0"
-                    max="12"
-                    value={hours}
-                    onChange={(e) => handleHoursChange(e.target.value)}
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      padding: '10px 40px 10px 14px',
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-strong)',
-                      backgroundColor: 'var(--surface)',
-                      color: 'var(--text-primary)',
-                    }}
-                  />
-                  <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }}>
-                    hrs
-                  </span>
-                </div>
+          {/* Custom Time Input */}
+          <div style={{ marginBottom: '14px' }}>
+            <label className="form-label">Custom Duration</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="number"
+                  min="0"
+                  max="12"
+                  value={hours}
+                  onChange={(e) => handleHoursChange(e.target.value)}
+                  disabled={loading}
+                  className="form-input"
+                  style={{ paddingRight: '42px', fontSize: '15px', fontWeight: 600, fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}
+                />
+                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: 'var(--text-3)', pointerEvents: 'none' }}>
+                  hrs
+                </span>
               </div>
 
-              <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>:</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-3)' }}>:</span>
 
-              <div style={{ flex: 1 }}>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    step="5"
-                    value={minutes}
-                    onChange={(e) => handleMinutesChange(e.target.value)}
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      padding: '10px 40px 10px 14px',
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-strong)',
-                      backgroundColor: 'var(--surface)',
-                      color: 'var(--text-primary)',
-                    }}
-                  />
-                  <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }}>
-                    mins
-                  </span>
-                </div>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  step="5"
+                  value={minutes}
+                  onChange={(e) => handleMinutesChange(e.target.value)}
+                  disabled={loading}
+                  className="form-input"
+                  style={{ paddingRight: '42px', fontSize: '15px', fontWeight: 600, fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}
+                />
+                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: 'var(--text-3)', pointerEvents: 'none' }}>
+                  mins
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Range Helper Text */}
+          {/* Range Helper */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             fontSize: '12px',
-            color: 'var(--text-secondary)',
-            marginBottom: '20px',
+            color: 'var(--text-3)',
+            marginBottom: '18px',
           }}>
-            <span>Allowed range: <strong>15 minutes – 12 hours</strong></span>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+            <span>Range: <strong style={{ color: 'var(--text-2)' }}>15 min – 12 hrs</strong></span>
+            <span style={{ fontWeight: 700, fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-1)' }}>
               Total: {totalMinutes}m
             </span>
           </div>
 
-          {/* Inline Error */}
           {error && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 14px',
-              backgroundColor: 'var(--accent-coral-soft)',
-              color: 'var(--accent-coral-text)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '12px',
-              marginBottom: '18px',
-            }}>
-              <AlertCircle size={15} style={{ flexShrink: 0 }} />
-              <span>{error}</span>
+            <div className="alert-banner alert-danger" style={{ marginBottom: '16px' }}>
+              <AlertCircle size={14} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: '12px' }}>{error}</span>
             </div>
           )}
 
-          {/* Actions */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
             <button
               type="button"
@@ -309,7 +247,6 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };

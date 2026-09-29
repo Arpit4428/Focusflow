@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Modal } from '../components/common/Modal';
 import { subjectService } from '../services/subjectService';
 import type { Subject, SubjectRequest } from '../types/subject';
 import type { ApiError } from '../types/auth';
@@ -13,13 +14,15 @@ import {
 } from 'lucide-react';
 
 const PRESET_COLORS = [
-  { label: 'Mint', value: '#DDEBDF' },
-  { label: 'Green', value: '#C9DCCB' },
-  { label: 'Lime', value: '#E7FF63' },
-  { label: 'Soft Coral', value: '#F0D5CF' },
-  { label: 'Slate Blue', value: '#D4E4F0' },
-  { label: 'Lavender', value: '#E2D4F0' },
-  { label: 'Peach', value: '#FCEFD8' },
+  { label: 'Sage',        value: '#A8C5A3' },
+  { label: 'Forest',      value: '#6B8F71' },
+  { label: 'Teal',        value: '#7BB5B8' },
+  { label: 'Sky',         value: '#8ABBE8' },
+  { label: 'Lavender',    value: '#A89EC4' },
+  { label: 'Dusty Rose',  value: '#D4857B' },
+  { label: 'Warm Sand',   value: '#C9A97B' },
+  { label: 'Mustard',     value: '#C9A94A' },
+  { label: 'Slate',       value: '#8FA3B1' },
 ];
 
 export const Subjects: React.FC = () => {
@@ -27,16 +30,14 @@ export const Subjects: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Create / Edit Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [formName, setFormName] = useState('');
-  const [formColor, setFormColor] = useState('#DDEBDF');
+  const [formColor, setFormColor] = useState(PRESET_COLORS[0].value);
   const [formDescription, setFormDescription] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Delete Modal State
   const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -62,7 +63,7 @@ export const Subjects: React.FC = () => {
   const openCreateModal = () => {
     setEditingSubject(null);
     setFormName('');
-    setFormColor('#DDEBDF');
+    setFormColor(PRESET_COLORS[0].value);
     setFormDescription('');
     setFormError(null);
     setIsModalOpen(true);
@@ -71,7 +72,7 @@ export const Subjects: React.FC = () => {
   const openEditModal = (sub: Subject) => {
     setEditingSubject(sub);
     setFormName(sub.name);
-    setFormColor(sub.color || '#DDEBDF');
+    setFormColor(sub.color || PRESET_COLORS[0].value);
     setFormDescription(sub.description || '');
     setFormError(null);
     setIsModalOpen(true);
@@ -117,10 +118,8 @@ export const Subjects: React.FC = () => {
 
   const confirmDelete = async () => {
     if (!subjectToDelete) return;
-
     setDeleting(true);
     setDeleteError(null);
-
     try {
       await subjectService.deleteSubject(subjectToDelete.id);
       setSubjectToDelete(null);
@@ -134,117 +133,82 @@ export const Subjects: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      {/* Editorial Header */}
+    <div className="page-enter" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+      {/* ── Page Header ── */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         flexWrap: 'wrap',
         gap: '20px',
-        marginBottom: '32px',
+        marginBottom: '36px',
       }}>
         <div>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '12px',
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            marginBottom: '8px',
-          }}>
-            <span>✦</span>
-            <span>ACADEMIC CURRICULUM</span>
-          </div>
+          <div className="section-label" style={{ marginBottom: '10px' }}>Academic Curriculum</div>
           <h1 className="title-hero">Academic Subjects</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '15px', marginTop: '6px' }}>
-            Organize coursework, assign distinct pastel identities, and structure focus analytics.
+          <p style={{ color: 'var(--text-2)', fontSize: '14px', marginTop: '8px', lineHeight: 1.5 }}>
+            Organize coursework, assign color identities, and structure focus analytics by subject.
           </p>
         </div>
-
-        <button
-          onClick={openCreateModal}
-          className="btn btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <Plus size={18} />
+        <button onClick={openCreateModal} className="btn btn-primary" style={{ padding: '10px 22px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Plus size={15} />
           <span>New Subject</span>
         </button>
       </div>
 
-      {/* Global Alert */}
       {error && (
         <div className="alert-banner alert-danger" style={{ marginBottom: '24px' }}>
-          <AlertCircle size={18} />
+          <AlertCircle size={16} />
           <span>{error}</span>
-          <button
-            onClick={fetchSubjects}
-            style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit' }}
-          >
-            Retry
-          </button>
+          <button onClick={fetchSubjects} style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit', fontWeight: 600 }}>Retry</button>
         </div>
       )}
 
-      {/* Content Area */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
+        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-2)' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            border: '3px solid var(--border-strong)',
-            borderTopColor: 'var(--text-primary)',
+            width: '32px', height: '32px',
+            border: '2.5px solid var(--border)',
+            borderTopColor: 'var(--accent)',
             borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 16px',
+            animation: 'spin 0.8s linear infinite',
+            margin: '0 auto 14px',
           }} />
-          <p>Loading your academic subjects...</p>
+          <p style={{ fontSize: '13px' }}>Loading your academic subjects...</p>
         </div>
       ) : subjects.length === 0 ? (
         <div style={{
           textAlign: 'center',
           padding: '64px 24px',
           backgroundColor: 'var(--surface)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px dashed var(--border)',
-          boxShadow: 'var(--shadow-card)',
+          borderRadius: 'var(--radius-xl)',
+          border: '1px dashed var(--border-strong)',
         }}>
           <div style={{
-            width: '56px',
-            height: '56px',
+            width: '52px', height: '52px',
             borderRadius: '50%',
-            backgroundColor: 'var(--surface-sage)',
-            color: 'var(--text-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            backgroundColor: 'var(--sage)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px',
           }}>
-            <BookOpen size={24} />
+            <BookOpen size={22} color="var(--accent)" />
           </div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '8px' }}>
             No Subjects Yet
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '400px', margin: '0 auto 24px' }}>
-            Create your university courses or study subjects to associate with tasks and timed focus sessions.
+          <p style={{ color: 'var(--text-2)', fontSize: '13.5px', maxWidth: '400px', margin: '0 auto 24px', lineHeight: 1.55 }}>
+            Create your university courses or study subjects to associate with tasks and focus sessions.
           </p>
-          <button
-            onClick={openCreateModal}
-            className="btn btn-primary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-          >
-            <Plus size={16} />
+          <button onClick={openCreateModal} className="btn btn-primary" style={{ display: 'inline-flex' }}>
+            <Plus size={15} />
             <span>Create First Subject</span>
           </button>
         </div>
       ) : (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: '20px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: '16px',
         }}>
           {subjects.map((sub) => (
             <div
@@ -253,39 +217,45 @@ export const Subjects: React.FC = () => {
                 backgroundColor: 'var(--surface)',
                 borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--border)',
-                padding: '24px',
-                boxShadow: 'var(--shadow-card)',
+                padding: '22px 22px 18px',
+                boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between',
                 position: 'relative',
                 overflow: 'hidden',
+                transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
               {/* Top Accent Strip */}
               <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '4px',
-                backgroundColor: sub.color || '#DDEBDF',
+                position: 'absolute', top: 0, left: 0, right: 0,
+                height: '3px',
+                backgroundColor: sub.color || 'var(--sage-dark)',
               }} />
 
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', marginTop: '6px' }}>
                   <div style={{
-                    width: '14px',
-                    height: '14px',
-                    borderRadius: '50%',
-                    backgroundColor: sub.color || '#DDEBDF',
-                    border: '1px solid rgba(0,0,0,0.1)',
+                    width: '32px', height: '32px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: sub.color || 'var(--sage)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
-                  }} />
+                    opacity: 0.8,
+                  }}>
+                    <BookOpen size={14} color="rgba(0,0,0,0.5)" />
+                  </div>
                   <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
+                    fontSize: '16px', fontWeight: 700,
+                    color: 'var(--text-1)',
                     letterSpacing: '-0.02em',
                     margin: 0,
                   }}>
@@ -296,20 +266,20 @@ export const Subjects: React.FC = () => {
                 {sub.description ? (
                   <p style={{
                     fontSize: '13px',
-                    color: 'var(--text-secondary)',
-                    lineHeight: '1.5',
-                    marginBottom: '20px',
+                    color: 'var(--text-2)',
+                    lineHeight: 1.55,
+                    marginBottom: '18px',
                   }}>
                     {sub.description}
                   </p>
                 ) : (
                   <p style={{
                     fontSize: '13px',
-                    color: 'var(--text-muted)',
+                    color: 'var(--text-3)',
                     fontStyle: 'italic',
-                    marginBottom: '20px',
+                    marginBottom: '18px',
                   }}>
-                    No description provided.
+                    No description added.
                   </p>
                 )}
               </div>
@@ -318,56 +288,59 @@ export const Subjects: React.FC = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                paddingTop: '16px',
+                paddingTop: '14px',
                 borderTop: '1px solid var(--border)',
               }}>
-                <span className="text-meta">
-                  Added {new Date(sub.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 500 }}>
+                  {new Date(sub.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
 
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '4px' }}>
                   <button
                     onClick={() => openEditModal(sub)}
                     style={{
-                      padding: '6px 10px',
-                      borderRadius: 'var(--radius-sm)',
+                      display: 'inline-flex', alignItems: 'center', gap: '5px',
+                      padding: '5px 10px',
+                      borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border)',
                       backgroundColor: 'transparent',
-                      color: 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '12px',
-                      fontWeight: 500,
+                      color: 'var(--text-2)',
+                      fontSize: '12px', fontWeight: 600,
+                      cursor: 'pointer', transition: 'var(--transition)',
                     }}
-                    title="Edit Subject"
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    title="Edit"
                   >
-                    <Edit2 size={13} />
+                    <Edit2 size={12} />
                     <span>Edit</span>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setSubjectToDelete(sub);
-                      setDeleteError(null);
-                    }}
+                    onClick={() => { setSubjectToDelete(sub); setDeleteError(null); }}
                     style={{
-                      padding: '6px 10px',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--border)',
+                      display: 'inline-flex', alignItems: 'center', gap: '5px',
+                      padding: '5px 10px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid transparent',
                       backgroundColor: 'transparent',
-                      color: '#8C3D32',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '12px',
-                      fontWeight: 500,
+                      color: 'var(--text-3)',
+                      fontSize: '12px', fontWeight: 600,
+                      cursor: 'pointer', transition: 'var(--transition)',
                     }}
-                    title="Delete Subject"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--coral-light)';
+                      e.currentTarget.style.color = 'var(--coral-text)';
+                      e.currentTarget.style.borderColor = 'rgba(232,123,106,0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = 'var(--text-3)';
+                      e.currentTarget.style.borderColor = 'transparent';
+                    }}
+                    title="Delete"
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={12} />
                     <span>Delete</span>
                   </button>
                 </div>
@@ -377,211 +350,128 @@ export const Subjects: React.FC = () => {
         </div>
       )}
 
-      {/* Create / Edit Modal */}
-      {isModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(17, 17, 17, 0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '20px',
-        }}>
-          <div style={{
-            backgroundColor: 'var(--surface)',
-            borderRadius: 'var(--radius-lg)',
-            width: '100%',
-            maxWidth: '480px',
-            boxShadow: 'var(--shadow-lg)',
-            border: '1px solid var(--border)',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '24px 28px',
-              borderBottom: '1px solid var(--border)',
-            }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-                {editingSubject ? 'Edit Subject' : 'New Academic Subject'}
-              </h2>
-              <button
-                onClick={closeModal}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} style={{ padding: '28px' }}>
-              {formError && (
-                <div className="alert-banner alert-danger" style={{ marginBottom: '20px' }}>
-                  <AlertCircle size={16} />
-                  <span>{formError}</span>
-                </div>
-              )}
-
-              {/* Subject Name */}
-              <div style={{ marginBottom: '20px' }}>
-                <label className="text-meta" style={{ display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>
-                  Subject Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={50}
-                  className="input-custom"
-                  placeholder="e.g., Computer Networks, Algorithms"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                />
-              </div>
-
-              {/* Color Swatch Picker */}
-              <div style={{ marginBottom: '20px' }}>
-                <label className="text-meta" style={{ display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>
-                  Subject Identity Color
-                </label>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {PRESET_COLORS.map((c) => {
-                    const isSelected = formColor.toUpperCase() === c.value.toUpperCase();
-                    return (
-                      <button
-                        key={c.value}
-                        type="button"
-                        onClick={() => setFormColor(c.value)}
-                        style={{
-                          width: '38px',
-                          height: '38px',
-                          borderRadius: '50%',
-                          backgroundColor: c.value,
-                          border: isSelected ? '2px solid var(--text-primary)' : '1px solid rgba(0,0,0,0.15)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          position: 'relative',
-                        }}
-                        title={c.label}
-                      >
-                        {isSelected && <Check size={16} color="#111111" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Description */}
-              <div style={{ marginBottom: '28px' }}>
-                <label className="text-meta" style={{ display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>
-                  Description (Optional)
-                </label>
-                <textarea
-                  rows={3}
-                  maxLength={500}
-                  className="input-custom"
-                  placeholder="Course topics, professor, or module notes..."
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-
-              {/* Modal Actions */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="btn btn-outline"
-                  disabled={submitting}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Saving...' : editingSubject ? 'Save Changes' : 'Create Subject'}
-                </button>
-              </div>
-            </form>
-          </div>
+      {/* ── Create / Edit Modal ── */}
+      <Modal isOpen={isModalOpen} onClose={closeModal} maxWidth="520px">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '19px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+            {editingSubject ? 'Edit Subject' : 'New Academic Subject'}
+          </h2>
+          <button
+            onClick={closeModal}
+            aria-label="Close"
+            style={{ background: 'none', color: 'var(--text-muted)', padding: '5px', borderRadius: 'var(--radius-sm)' }}
+          >
+            <X size={18} />
+          </button>
         </div>
-      )}
 
-      {/* Delete Confirmation Modal */}
-      {subjectToDelete && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(52, 59, 47, 0.45)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: '20px',
-        }}>
-          <div style={{
-            backgroundColor: 'var(--surface)',
-            borderRadius: 'var(--radius-lg)',
-            width: '100%',
-            maxWidth: '440px',
-            boxShadow: 'var(--shadow-lg)',
-            border: '1px solid var(--border)',
-            padding: '28px',
-          }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px' }}>
-              Delete Subject
-            </h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5', marginBottom: '20px' }}>
-              Are you sure you want to delete <strong>{subjectToDelete.name}</strong>?
-            </p>
+        {formError && (
+          <div className="alert-banner alert-danger">
+            <AlertCircle size={14} />
+            <span>{formError}</span>
+          </div>
+        )}
 
-            {deleteError && (
-              <div className="alert-banner alert-danger" style={{ marginBottom: '20px' }}>
-                <AlertCircle size={16} />
-                <span>{deleteError}</span>
-              </div>
-            )}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="subjectName">Subject Name *</label>
+            <input
+              id="subjectName"
+              type="text"
+              required
+              maxLength={50}
+              className="form-input"
+              placeholder="e.g., Computer Networks, Algorithms"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              autoFocus
+            />
+          </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button
-                type="button"
-                onClick={() => setSubjectToDelete(null)}
-                className="btn btn-outline"
-                disabled={deleting}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmDelete}
-                className="btn"
-                style={{
-                  backgroundColor: 'var(--accent-coral)',
-                  color: '#FFFFFF',
-                  fontWeight: 600,
-                }}
-                disabled={deleting}
-              >
-                {deleting ? 'Deleting...' : 'Confirm Delete'}
-              </button>
+          {/* Color Swatch Picker */}
+          <div className="form-group">
+            <label className="form-label">Subject Color</label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {PRESET_COLORS.map((c) => {
+                const isSelected = formColor.toUpperCase() === c.value.toUpperCase();
+                return (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setFormColor(c.value)}
+                    style={{
+                      width: '34px', height: '34px',
+                      borderRadius: '50%',
+                      backgroundColor: c.value,
+                      border: isSelected ? '2.5px solid var(--text-primary)' : '2px solid transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: isSelected ? '0 0 0 2px rgba(26,26,24,0.15)' : 'none',
+                      transition: 'var(--transition-fast)',
+                    }}
+                    title={c.label}
+                  >
+                    {isSelected && <Check size={14} color="#fff" />}
+                  </button>
+                );
+              })}
             </div>
           </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="subjectDesc">Description (Optional)</label>
+            <textarea
+              id="subjectDesc"
+              rows={3}
+              maxLength={500}
+              className="form-input"
+              placeholder="Course topics, professor, or module notes..."
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+            <button type="button" onClick={closeModal} className="btn btn-outline" disabled={submitting}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? 'Saving...' : editingSubject ? 'Save Changes' : 'Create Subject'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ── Delete Confirmation Modal ── */}
+      <Modal isOpen={!!subjectToDelete} onClose={() => setSubjectToDelete(null)} maxWidth="400px" style={{ textAlign: 'center' }}>
+        <div style={{
+          width: '48px', height: '48px',
+          borderRadius: '50%',
+          backgroundColor: 'var(--accent-coral-subtle)',
+          color: 'var(--accent-coral-text)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 16px',
+        }}>
+          <Trash2 size={22} />
         </div>
-      )}
+        <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px', color: 'var(--text-primary)' }}>Delete Subject?</h3>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
+          Delete <strong>{subjectToDelete?.name}</strong>? This cannot be undone.
+        </p>
+
+        {deleteError && (
+          <div className="alert-banner alert-danger">
+            <AlertCircle size={14} />
+            <span style={{ fontSize: '12px' }}>{deleteError}</span>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+          <button type="button" onClick={() => setSubjectToDelete(null)} className="btn btn-outline" disabled={deleting}>Cancel</button>
+          <button type="button" onClick={confirmDelete} className="btn btn-danger" disabled={deleting}>
+            {deleting ? 'Deleting...' : 'Confirm Delete'}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

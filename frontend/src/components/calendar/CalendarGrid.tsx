@@ -162,9 +162,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     <div style={{
       backgroundColor: 'var(--surface)',
       border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)',
+      borderRadius: 'var(--radius-xl)',
       padding: '24px',
-      boxShadow: 'var(--shadow-card)',
+      boxShadow: 'var(--shadow-sm)',
     }}>
       {/* Month Navigation Header */}
       <div style={{
@@ -198,7 +198,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           >
             Today
           </button>
-          <div style={{ display: 'flex', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-btn)', overflow: 'hidden' }}>
             <button
               onClick={onPrevMonth}
               aria-label="Previous month"
@@ -327,6 +327,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               {/* Day Header: Number + Focus Badge */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{
+                  fontFamily: 'var(--font-digits)',
+                  fontVariantNumeric: 'tabular-nums',
                   fontSize: '13px',
                   fontWeight: isSelected || isToday ? 700 : 500,
                   color: dayNumColor,
@@ -336,12 +338,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
                 {hasFocus && (
                   <span style={{
+                    fontFamily: 'var(--font-digits)',
+                    fontVariantNumeric: 'tabular-nums',
                     fontSize: '10px',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     backgroundColor: isTextLight ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)',
                     color: isTextLight ? '#FFFFFF' : 'var(--text-primary)',
                     padding: '1px 5px',
-                    borderRadius: 'var(--radius-pill)',
+                    borderRadius: 'var(--radius-badge)',
                     lineHeight: '1.3',
                   }}>
                     {focusMinutes}m
@@ -353,6 +357,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px' }}>
                 {hasTasks && activity && (
                   <div style={{
+                    fontFamily: 'var(--font-digits)',
+                    fontVariantNumeric: 'tabular-nums',
                     fontSize: '10px',
                     color: metaTextColor,
                     fontWeight: 500,

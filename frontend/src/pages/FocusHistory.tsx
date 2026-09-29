@@ -3,14 +3,13 @@ import { sessionService } from '../services/sessionService';
 import { FocusHistoryList } from '../components/focus/FocusHistoryList';
 import type { FocusSession } from '../types/session';
 import type { ApiError } from '../types/auth';
-import { Filter, AlertCircle } from 'lucide-react';
+import { SlidersHorizontal, AlertCircle, X } from 'lucide-react';
 
 export const FocusHistory: React.FC = () => {
   const [sessions, setSessions] = useState<FocusSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
   const [subjectFilter, setSubjectFilter] = useState('ALL');
   const [dateFilter, setDateFilter] = useState('');
 
@@ -38,70 +37,56 @@ export const FocusHistory: React.FC = () => {
     setSessions((prev) => prev.filter((s) => s.id !== id));
   };
 
-  // Distinct subjects for filter dropdown
   const uniqueSubjects = Array.from(new Set(sessions.map((s) => s.subject))).filter(Boolean);
 
-  // Client-side date filter if selected
   const displayedSessions = sessions.filter((s) => {
     if (!dateFilter) return true;
     const sessionDate = new Date(s.startedAt).toISOString().slice(0, 10);
     return sessionDate === dateFilter;
   });
 
+  const hasActiveFilter = subjectFilter !== 'ALL' || dateFilter;
+
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      {/* Editorial Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          fontSize: '12px',
-          fontWeight: 600,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          color: 'var(--text-muted)',
-          marginBottom: '8px',
-        }}>
-          <span>✦</span>
-          <span>Chronological Focus Record</span>
-        </div>
-        <h1 className="title-hero">
-          Focus Session History
-        </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '15px', marginTop: '6px' }}>
+    <div className="page-enter" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+      {/* ── Header ── */}
+      <div style={{ marginBottom: '36px' }}>
+        <div className="section-label" style={{ marginBottom: '10px' }}>Chronological Focus Record</div>
+        <h1 className="title-hero">Focus Session History</h1>
+        <p style={{ color: 'var(--text-2)', fontSize: '14px', marginTop: '8px', lineHeight: 1.5 }}>
           Review all logged study sessions, filtered by subject and completion date.
         </p>
       </div>
 
-      {/* Filter Toolbar */}
+      {/* ── Filter Bar ── */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '16px',
+        gap: '12px',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px 20px',
+        padding: '14px 18px',
         backgroundColor: 'var(--surface)',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-subtle)',
-        marginBottom: '28px',
+        boxShadow: 'var(--shadow-sm)',
+        marginBottom: '24px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Filter size={16} color="var(--text-muted)" />
-          <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Filters:</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+          <SlidersHorizontal size={14} color="var(--text-3)" />
+          <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)' }}>
+            Filters
+          </span>
         </div>
 
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
           {/* Subject Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Subject:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-3)', fontWeight: 600 }}>Subject:</span>
             <select
               value={subjectFilter}
               onChange={(e) => setSubjectFilter(e.target.value)}
               className="form-input"
-              style={{ height: '38px', padding: '6px 14px', fontSize: '13px', width: 'auto', borderRadius: 'var(--radius-pill)' }}
+              style={{ height: '36px', padding: '4px 12px', fontSize: '13px', width: 'auto', borderRadius: 'var(--radius-md)' }}
             >
               <option value="ALL">All Subjects</option>
               {uniqueSubjects.map((sub) => (
@@ -111,55 +96,63 @@ export const FocusHistory: React.FC = () => {
           </div>
 
           {/* Date Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Date:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-3)', fontWeight: 600 }}>Date:</span>
             <input
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
               className="form-input"
-              style={{ height: '38px', padding: '6px 14px', fontSize: '13px', width: 'auto', borderRadius: 'var(--radius-pill)' }}
+              style={{ height: '36px', padding: '4px 12px', fontSize: '13px', width: 'auto', borderRadius: 'var(--radius-md)' }}
             />
             {dateFilter && (
               <button
                 onClick={() => setDateFilter('')}
-                style={{ background: 'none', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 600, textDecoration: 'underline' }}
+                style={{ background: 'none', color: 'var(--text-3)', display: 'flex', alignItems: 'center', padding: '4px' }}
+                aria-label="Clear date filter"
               >
-                Clear
+                <X size={14} />
               </button>
             )}
           </div>
+
+          {/* Clear all filters */}
+          {hasActiveFilter && (
+            <button
+              onClick={() => { setSubjectFilter('ALL'); setDateFilter(''); }}
+              style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', background: 'none', textDecoration: 'underline', textUnderlineOffset: '2px', marginLeft: 'auto' }}
+            >
+              Clear all
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div className="alert-banner alert-danger">
-          <AlertCircle size={18} />
+          <AlertCircle size={16} />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Loading Spinner */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-2)' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            border: '3px solid var(--border)',
-            borderTopColor: 'var(--accent-primary)',
+            width: '32px', height: '32px',
+            border: '2.5px solid var(--border)',
+            borderTopColor: 'var(--accent)',
             borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 16px',
+            animation: 'spin 0.8s linear infinite',
+            margin: '0 auto 14px',
           }} />
-          <p>Loading focus session history...</p>
+          <p style={{ fontSize: '13px' }}>Loading focus session history...</p>
         </div>
       ) : (
         <FocusHistoryList
           sessions={displayedSessions}
           onDeleteSession={handleDeleteSession}
           emptyMessage={
-            subjectFilter !== 'ALL' || dateFilter
+            hasActiveFilter
               ? 'No focus sessions match your selected filters.'
               : 'No focus sessions recorded yet. Complete a study session in the Focus Timer to see it here!'
           }
@@ -168,4 +161,3 @@ export const FocusHistory: React.FC = () => {
     </div>
   );
 };
-

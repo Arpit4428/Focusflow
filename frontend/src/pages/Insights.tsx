@@ -6,6 +6,9 @@ import {
   Clock,
   BarChart2,
   AlertCircle,
+  TrendingUp,
+  CheckSquare,
+  Star,
 } from 'lucide-react';
 
 export const Insights: React.FC = () => {
@@ -41,17 +44,15 @@ export const Insights: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 20px', gap: '16px', color: 'var(--text-2)' }}>
         <div style={{
-          width: '36px',
-          height: '36px',
-          border: '3px solid var(--border)',
-          borderTopColor: 'var(--accent-primary)',
+          width: '32px', height: '32px',
+          border: '2.5px solid var(--border)',
+          borderTopColor: 'var(--accent)',
           borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto 16px',
+          animation: 'spin 0.8s linear infinite',
         }} />
-        <p>Analyzing your study patterns...</p>
+        <p style={{ fontSize: '13px' }}>Analyzing your study patterns...</p>
       </div>
     );
   }
@@ -60,9 +61,9 @@ export const Insights: React.FC = () => {
     return (
       <div style={{ padding: '20px 0' }}>
         <div className="alert-banner alert-danger">
-          <AlertCircle size={18} />
+          <AlertCircle size={16} />
           <span>{error || 'Unable to load academic insights.'}</span>
-          <button onClick={fetchInsights} style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit' }}>
+          <button onClick={fetchInsights} style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit', fontWeight: 600 }}>
             Retry
           </button>
         </div>
@@ -73,27 +74,12 @@ export const Insights: React.FC = () => {
   const hasActivity = data.totalSessions > 0 || data.totalTasks > 0;
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Editorial Report Header */}
-      <div style={{ marginBottom: '36px' }}>
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          fontSize: '12px',
-          fontWeight: 600,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          color: 'var(--text-muted)',
-          marginBottom: '8px',
-        }}>
-          <span>✦</span>
-          <span>Academic Analytics &amp; Habit Audit</span>
-        </div>
-        <h1 className="title-hero">
-          Academic Productivity Insights
-        </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '15px', marginTop: '6px' }}>
+    <div className="page-enter" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {/* ── Header ── */}
+      <div style={{ marginBottom: '40px' }}>
+        <div className="section-label" style={{ marginBottom: '10px' }}>Academic Analytics &amp; Habit Audit</div>
+        <h1 className="title-hero">Productivity Insights</h1>
+        <p style={{ color: 'var(--text-2)', fontSize: '14px', marginTop: '8px', lineHeight: 1.5 }}>
           Analytical breakdown of study consistency, subject time distribution, and task velocity.
         </p>
       </div>
@@ -101,194 +87,181 @@ export const Insights: React.FC = () => {
       {!hasActivity ? (
         <div style={{
           textAlign: 'center',
-          padding: '64px 20px',
+          padding: '64px 24px',
           backgroundColor: 'var(--surface)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px dashed var(--border)',
-          boxShadow: 'var(--shadow-card)',
+          borderRadius: 'var(--radius-xl)',
+          border: '1px dashed var(--border-strong)',
         }}>
           <div style={{
-            width: '52px',
-            height: '52px',
+            width: '52px', height: '52px',
             borderRadius: '50%',
-            backgroundColor: 'var(--surface-sage)',
-            color: 'var(--text-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            backgroundColor: 'var(--sage)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px',
           }}>
-            <BarChart2 size={24} />
+            <BarChart2 size={22} color="var(--accent)" />
           </div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>
+          <h3 style={{ fontSize: '17px', fontWeight: 600, marginBottom: '6px', color: 'var(--text-1)' }}>
             No Activity Recorded Yet
           </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '420px', margin: '0 auto' }}>
+          <p style={{ color: 'var(--text-2)', fontSize: '13.5px', maxWidth: '420px', margin: '0 auto', lineHeight: 1.55 }}>
             Insights will compute automatically as soon as you record your first focus session or create study tasks.
           </p>
         </div>
       ) : (
         <>
-          {/* Dominant Hero Metrics Grid */}
+          {/* ── Metric Cards Grid ── */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '20px',
-            marginBottom: '36px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '16px',
+            marginBottom: '28px',
           }}>
-            {/* Metric 1: Total Focus (Dominant Muted Sage) */}
+            {/* Total Focus — Primary Hero Metric */}
             <div style={{
-              backgroundColor: 'var(--surface-sage)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--border)',
-              padding: '28px',
+              backgroundColor: 'var(--accent)',
+              borderRadius: 'var(--radius-xl)',
+              padding: '28px 24px',
+              color: '#fff',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-card)',
+              minHeight: '160px',
+              position: 'relative',
+              overflow: 'hidden',
             }}>
+              <div style={{ position: 'absolute', bottom: '-30px', right: '-30px', width: '120px', height: '120px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', opacity: 0.8 }}>
+                <Clock size={13} />
+                <span>Total Focus Time</span>
+              </div>
               <div>
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.04em',
-                  color: 'var(--text-primary)',
-                  marginBottom: '12px',
-                }}>
-                  <Clock size={14} />
-                  <span>TOTAL FOCUS TIME</span>
-                </div>
-                <div style={{ fontSize: '42px', fontWeight: 600, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: 'clamp(32px, 5vw, 44px)', fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '6px' }}>
                   {formatDuration(data.totalFocusSeconds)}
                 </div>
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '16px' }}>
-                All-time cumulative study volume
+                <div style={{ fontSize: '12px', opacity: 0.75 }}>All-time cumulative study volume</div>
               </div>
             </div>
 
-            {/* Metric 2: Average Duration */}
+            {/* Avg Session */}
             <div style={{
               backgroundColor: 'var(--surface)',
               border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              padding: '28px',
+              borderRadius: 'var(--radius-xl)',
+              padding: '28px 24px',
+              boxShadow: 'var(--shadow-sm)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-card)',
+              minHeight: '160px',
             }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <TrendingUp size={14} color="var(--text-3)" />
+                <span className="text-meta">Avg Session</span>
+              </div>
               <div>
-                <div className="text-meta" style={{ textTransform: 'uppercase', marginBottom: '12px' }}>
-                  AVG SESSION DURATION
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '32px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-1)', lineHeight: 1, marginBottom: '6px' }}>
                   {formatDuration(data.averageSessionDurationSeconds)}
                 </div>
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '16px' }}>
-                Across {data.totalSessions} logged sessions
+                <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>
+                  Across {data.totalSessions} logged sessions
+                </div>
               </div>
             </div>
 
-            {/* Metric 3: Task Completion Rate */}
+            {/* Task Completion Rate */}
             <div style={{
               backgroundColor: 'var(--surface)',
               border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              padding: '28px',
+              borderRadius: 'var(--radius-xl)',
+              padding: '28px 24px',
+              boxShadow: 'var(--shadow-sm)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-card)',
+              minHeight: '160px',
             }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <CheckSquare size={14} color="var(--text-3)" />
+                <span className="text-meta">Task Completion</span>
+              </div>
               <div>
-                <div className="text-meta" style={{ textTransform: 'uppercase', marginBottom: '12px' }}>
-                  TASK COMPLETION RATE
-                </div>
-                <div style={{ fontSize: '32px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '32px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-1)', lineHeight: 1, marginBottom: '6px' }}>
                   {data.taskCompletionRate}%
                 </div>
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '16px' }}>
-                {data.completedTasks} of {data.totalTasks} tasks completed
+                <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>
+                  {data.completedTasks} of {data.totalTasks} tasks done
+                </div>
               </div>
             </div>
 
-            {/* Metric 4: Top Subject & Peak Day */}
+            {/* Top Subject */}
             <div style={{
-              backgroundColor: 'var(--surface)',
+              backgroundColor: 'var(--sage)',
               border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              padding: '28px',
+              borderRadius: 'var(--radius-xl)',
+              padding: '28px 24px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-card)',
+              minHeight: '160px',
             }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <Star size={14} color="var(--text-2)" />
+                <span className="text-meta">Top Subject</span>
+              </div>
               <div>
-                <div className="text-meta" style={{ textTransform: 'uppercase', marginBottom: '12px' }}>
-                  TOP SUBJECT &amp; PEAK DAY
-                </div>
-                <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                <div style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-1)', marginBottom: '4px', lineHeight: 1.2 }}>
                   {data.mostFocusedSubject || 'General Study'}
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Peak output: <strong>{data.mostProductiveDayOfWeek || 'N/A'}</strong>
+                <div style={{ fontSize: '12px', color: 'var(--text-2)', fontWeight: 500 }}>
+                  Peak day: <strong>{data.mostProductiveDayOfWeek || 'N/A'}</strong>
                 </div>
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '16px' }}>
-                Highest frequency concentration
               </div>
             </div>
           </div>
 
-
-          {/* Two-Column Section: Subject Allocation & Weekly Distribution */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '28px' }}>
+          {/* ── Two-column: Subject Allocation + Weekly Distribution ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
             {/* Subject Time Allocation */}
             <div style={{
               backgroundColor: 'var(--surface)',
               border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
+              borderRadius: 'var(--radius-xl)',
               padding: '28px',
-              boxShadow: 'var(--shadow-card)',
+              boxShadow: 'var(--shadow-sm)',
             }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: '4px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-1)', marginBottom: '4px' }}>
                 Subject Time Allocation
               </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
-                Proportional distribution of study hours across coursework
+              <p style={{ fontSize: '13px', color: 'var(--text-2)', marginBottom: '24px' }}>
+                Proportional focus hours across coursework
               </p>
 
               {data.subjectBreakdown.length === 0 ? (
-                <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No subjects logged yet.</p>
+                <p style={{ color: 'var(--text-3)', fontSize: '13px' }}>No subjects logged yet.</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                   {data.subjectBreakdown.map((item) => (
                     <div key={item.subject}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{item.subject}</span>
-                        <span style={{ color: 'var(--text-secondary)' }}>
-                          {formatDuration(item.durationSeconds)} ({item.percentage}%)
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '7px' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{item.subject}</span>
+                        <span style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-2)' }}>
+                          {formatDuration(item.durationSeconds)} — <strong style={{ color: 'var(--text-1)' }}>{item.percentage}%</strong>
                         </span>
                       </div>
                       <div style={{
-                        width: '100%',
-                        height: '8px',
-                        backgroundColor: 'var(--bg-secondary)',
+                        width: '100%', height: '8px',
+                        backgroundColor: 'var(--bg-subtle)',
                         borderRadius: 'var(--radius-pill)',
                         overflow: 'hidden',
                       }}>
                         <div style={{
                           height: '100%',
                           width: `${item.percentage}%`,
-                          backgroundColor: 'var(--accent-primary)',
+                          backgroundColor: 'var(--accent)',
                           borderRadius: 'var(--radius-pill)',
+                          transition: 'width 0.5s ease',
                         }} />
                       </div>
                     </div>
@@ -297,22 +270,22 @@ export const Insights: React.FC = () => {
               )}
             </div>
 
-            {/* Day of Week Distribution */}
+            {/* Weekly Study Consistency */}
             <div style={{
               backgroundColor: 'var(--surface)',
               border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
+              borderRadius: 'var(--radius-xl)',
               padding: '28px',
-              boxShadow: 'var(--shadow-card)',
+              boxShadow: 'var(--shadow-sm)',
             }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: '4px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-1)', marginBottom: '4px' }}>
                 Weekly Study Consistency
               </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-2)', marginBottom: '24px' }}>
                 Cumulative focus duration by day of the week
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 {data.dayOfWeekBreakdown.map((item) => {
                   const isTopDay = item.dayOfWeek === data.mostProductiveDayOfWeek && item.durationSeconds > 0;
                   return (
@@ -322,31 +295,29 @@ export const Insights: React.FC = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '12px 16px',
-                        backgroundColor: isTopDay ? 'var(--surface-sage)' : 'transparent',
+                        padding: '10px 14px',
+                        backgroundColor: isTopDay ? 'var(--sage)' : 'transparent',
                         borderBottom: isTopDay ? 'none' : '1px solid var(--border)',
                         borderRadius: isTopDay ? 'var(--radius-md)' : '0',
                         transition: 'var(--transition)',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: isTopDay ? 700 : 500, color: 'var(--text-primary)' }}>
+                        <span style={{ fontSize: '13px', fontWeight: isTopDay ? 700 : 500, color: 'var(--text-1)', minWidth: '96px' }}>
                           {item.dayOfWeek}
                         </span>
                         {isTopDay && (
-                          <span className="badge" style={{ backgroundColor: 'var(--accent-mustard)', color: 'var(--text-primary)', fontSize: '9px', fontWeight: 700 }}>
-                            Top Day
-                          </span>
+                          <span className="badge badge-status-COMPLETED" style={{ fontSize: '9px', fontWeight: 700 }}>Top Day</span>
                         )}
                       </div>
-
-                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      <div style={{ fontSize: '13px', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-2)', textAlign: 'right' }}>
                         {item.durationSeconds > 0 ? (
                           <>
-                            <strong style={{ color: 'var(--text-primary)' }}>{formatDuration(item.durationSeconds)}</strong> ({item.sessionCount} sessions)
+                            <strong style={{ color: 'var(--text-1)' }}>{formatDuration(item.durationSeconds)}</strong>
+                            <span style={{ color: 'var(--text-3)', marginLeft: '6px', fontSize: '11px' }}>({item.sessionCount} sessions)</span>
                           </>
                         ) : (
-                          <span style={{ color: 'var(--text-muted)' }}>0m</span>
+                          <span style={{ color: 'var(--text-3)' }}>No sessions</span>
                         )}
                       </div>
                     </div>
@@ -360,4 +331,3 @@ export const Insights: React.FC = () => {
     </div>
   );
 };
-

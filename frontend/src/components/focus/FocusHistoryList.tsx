@@ -20,13 +20,8 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-
-    if (hrs > 0) {
-      return `${hrs}h ${mins}m ${secs}s`;
-    }
-    if (mins > 0) {
-      return `${mins}m ${secs}s`;
-    }
+    if (hrs > 0) return `${hrs}h ${mins}m`;
+    if (mins > 0) return `${mins}m ${secs}s`;
     return `${secs}s`;
   };
 
@@ -63,25 +58,22 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
     return (
       <div style={{
         textAlign: 'center',
-        padding: '52px 20px',
+        padding: '48px 24px',
         backgroundColor: 'var(--surface)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px dashed var(--border)',
+        borderRadius: 'var(--radius-xl)',
+        border: '1px dashed var(--border-strong)',
       }}>
         <div style={{
-          width: '48px',
-          height: '48px',
+          width: '44px', height: '44px',
           borderRadius: '50%',
-          backgroundColor: 'var(--surface-sage)',
-          color: 'var(--text-primary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          backgroundColor: 'var(--bg-subtle)',
+          color: 'var(--text-muted)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 14px',
         }}>
-          <Clock size={22} />
+          <Clock size={20} />
         </div>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '420px', margin: '0 auto' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', maxWidth: '420px', margin: '0 auto', lineHeight: 1.55 }}>
           {emptyMessage}
         </p>
       </div>
@@ -92,8 +84,8 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
     <div style={{
       backgroundColor: 'var(--surface)',
       border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)',
-      boxShadow: 'var(--shadow-card)',
+      borderRadius: 'var(--radius-xl)',
+      boxShadow: 'var(--shadow-sm)',
       overflow: 'hidden',
     }}>
       {sessions.map((session, index) => {
@@ -103,60 +95,58 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
           <div
             key={session.id}
             style={{
-              padding: '18px 24px',
+              padding: '16px 20px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: '16px',
+              gap: '12px',
               flexWrap: 'wrap',
               borderBottom: isLast ? 'none' : '1px solid var(--border)',
-              transition: 'var(--transition)',
+              transition: 'background-color 0.15s ease',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
           >
             {/* Subject and Duration */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--surface-mint)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                width: '36px', height: '36px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--bg-subtle)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'var(--text-primary)',
                 flexShrink: 0,
               }}>
-                <BookOpen size={18} />
+                <BookOpen size={16} />
               </div>
 
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                  <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {session.subject}
                   </h4>
-                  <span className="badge badge-status-COMPLETED" style={{ fontSize: '10px', padding: '2px 8px' }}>
+                  <span className="badge badge-status-COMPLETED" style={{ fontSize: '10px', padding: '2px 7px' }}>
                     Completed
                   </span>
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                   {formatDuration(session.duration)}
                 </div>
               </div>
             </div>
 
-            {/* Date & Time Range */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--text-secondary)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
+            {/* Date & Time Range + Delete */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', fontSize: '12px', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-muted)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Calendar size={12} />
                 <span>{formatDate(session.startedAt)}</span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Clock size={13} style={{ color: 'var(--text-muted)' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Clock size={12} />
                 <span>{formatTimeRange(session.startedAt, session.endedAt)}</span>
               </div>
 
-              {/* Delete Action */}
               {onDeleteSession && (
                 <button
                   onClick={() => setDeleteConfirmId(session.id)}
@@ -165,14 +155,16 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
                   style={{
                     background: 'none',
                     color: 'var(--text-muted)',
-                    padding: '6px',
+                    padding: '5px',
                     borderRadius: 'var(--radius-sm)',
                     cursor: 'pointer',
+                    transition: 'var(--transition-fast)',
+                    display: 'flex', alignItems: 'center',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-coral)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent-coral)'; e.currentTarget.style.backgroundColor = 'var(--accent-coral-subtle)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={14} />
                 </button>
               )}
             </div>
@@ -183,22 +175,21 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '380px', textAlign: 'center' }}>
+          <div className="modal-content" style={{ maxWidth: '360px', textAlign: 'center' }}>
             <div style={{
-              width: '44px',
-              height: '44px',
+              width: '44px', height: '44px',
               borderRadius: '50%',
-              backgroundColor: 'var(--accent-coral-soft)',
+              backgroundColor: 'var(--accent-coral-subtle)',
               color: 'var(--accent-coral-text)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 14px',
             }}>
-              <Trash2 size={22} />
+              <Trash2 size={20} />
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '6px' }}>Delete Focus Session?</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
+              Delete Focus Session?
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '22px', lineHeight: 1.5 }}>
               Remove this focus session record from your history?
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
@@ -223,4 +214,3 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
     </div>
   );
 };
-

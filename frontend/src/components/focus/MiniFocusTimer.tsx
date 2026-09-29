@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useFocusTimer } from '../../hooks/useFocusTimer';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, ExternalLink } from 'lucide-react';
 
 export const MiniFocusTimer: React.FC = () => {
   const {
@@ -11,6 +11,10 @@ export const MiniFocusTimer: React.FC = () => {
     selectedSubjectColor,
     pause,
     resume,
+    isPipSupported,
+    isPipActive,
+    openPip,
+    closePip,
   } = useFocusTimer();
 
   const location = useLocation();
@@ -61,12 +65,12 @@ export const MiniFocusTimer: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        backgroundColor: 'var(--surface)',
+        backgroundColor: 'var(--surface-overlay)',
         border: '1px solid var(--border-strong)',
-        borderRadius: 'var(--radius-pill)',
-        padding: '8px 12px 8px 16px',
-        boxShadow: '0 6px 20px rgba(52, 59, 47, 0.14), 0 2px 6px rgba(52, 59, 47, 0.08)',
-        backdropFilter: 'blur(8px)',
+        borderRadius: '9999px',
+        padding: '7px 12px 7px 16px',
+        boxShadow: 'var(--shadow-lg)',
+        backdropFilter: 'blur(12px)',
         cursor: 'pointer',
         userSelect: 'none',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
@@ -79,8 +83,8 @@ export const MiniFocusTimer: React.FC = () => {
             width: '8px',
             height: '8px',
             borderRadius: '50%',
-            backgroundColor: isRunning ? 'var(--accent-mustard)' : 'var(--text-muted)',
-            boxShadow: isRunning ? '0 0 8px rgba(214, 184, 90, 0.65)' : 'none',
+            backgroundColor: isRunning ? 'var(--accent-olive)' : 'var(--accent-amber)',
+            boxShadow: isRunning ? '0 0 8px rgba(68, 89, 62, 0.65)' : 'none',
             flexShrink: 0,
             transition: 'all 0.2s ease',
           }}
@@ -127,7 +131,7 @@ export const MiniFocusTimer: React.FC = () => {
                 width: '6px',
                 height: '6px',
                 borderRadius: '50%',
-                backgroundColor: selectedSubjectColor || 'var(--accent-primary)',
+                backgroundColor: selectedSubjectColor || 'var(--accent-olive)',
                 flexShrink: 0,
               }}
             />
@@ -159,11 +163,13 @@ export const MiniFocusTimer: React.FC = () => {
       {/* Elapsed Digital Time */}
       <div
         style={{
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+          fontFamily: 'var(--font-digits)',
+          fontVariantNumeric: 'tabular-nums',
+          fontFeatureSettings: '"tnum" 1',
           fontSize: '14px',
-          fontWeight: 700,
+          fontWeight: 600,
           color: 'var(--text-primary)',
-          letterSpacing: '-0.02em',
+          letterSpacing: '-0.01em',
           minWidth: '64px',
           textAlign: 'center',
         }}
@@ -171,40 +177,81 @@ export const MiniFocusTimer: React.FC = () => {
         {formattedTime}
       </div>
 
-      {/* Quick Action Button: Pause or Resume */}
-      <button
-        type="button"
-        onClick={handleTogglePlayPause}
-        title={isRunning ? 'Pause session' : 'Resume session'}
-        aria-label={isRunning ? 'Pause session' : 'Resume session'}
-        style={{
-          width: '30px',
-          height: '30px',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: isRunning ? 'var(--surface-sage)' : 'var(--accent-primary)',
-          color: isRunning ? 'var(--text-primary)' : '#FBF9F3',
-          border: isRunning ? '1px solid var(--border)' : 'none',
-          cursor: 'pointer',
-          flexShrink: 0,
-          transition: 'all 0.15s ease',
-          boxShadow: isRunning ? 'none' : '0 2px 6px rgba(82, 99, 77, 0.3)',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.08)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
-      >
-        {isRunning ? (
-          <Pause size={13} strokeWidth={2.5} />
-        ) : (
-          <Play size={13} fill="currentColor" strokeWidth={0} style={{ marginLeft: '1px' }} />
+      {/* Action Buttons: Pause/Resume + Pop Out */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <button
+          type="button"
+          onClick={handleTogglePlayPause}
+          title={isRunning ? 'Pause session' : 'Resume session'}
+          aria-label={isRunning ? 'Pause session' : 'Resume session'}
+          style={{
+            width: '30px',
+            height: '30px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: isRunning ? 'var(--surface-raised)' : 'var(--accent)',
+            color: isRunning ? 'var(--text-primary)' : 'var(--accent-inverse)',
+            border: isRunning ? '1px solid var(--border)' : 'none',
+            cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'all 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.08)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          {isRunning ? (
+            <Pause size={13} strokeWidth={2.5} />
+          ) : (
+            <Play size={13} fill="currentColor" strokeWidth={0} style={{ marginLeft: '1px' }} />
+          )}
+        </button>
+
+        {isPipSupported && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isPipActive) {
+                closePip();
+              } else {
+                openPip();
+              }
+            }}
+            title={isPipActive ? 'Close floating window' : 'Pop out floating timer window'}
+            aria-label={isPipActive ? 'Close floating window' : 'Pop out floating timer window'}
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'transparent',
+              color: 'var(--text-muted)',
+              border: '1px solid transparent',
+              cursor: 'pointer',
+              flexShrink: 0,
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--text-primary)';
+              e.currentTarget.style.backgroundColor = 'var(--surface-hover)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-muted)';
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            <ExternalLink size={12} />
+          </button>
         )}
-      </button>
+      </div>
     </div>
   );
 };
