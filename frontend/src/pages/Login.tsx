@@ -99,22 +99,6 @@ export const Login: React.FC = () => {
           </p>
         </div>
 
-        {/* Footer badges */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {['Secure JWT Auth', 'MongoDB Atlas', 'Zero Clutter'].map((tag) => (
-            <span key={tag} style={{
-              fontSize: '11px', fontWeight: 600,
-              padding: '5px 11px',
-              borderRadius: 'var(--radius-pill)',
-              backgroundColor: 'rgba(255,255,255,0.6)',
-              color: 'var(--text-2)',
-              border: '1px solid var(--border)',
-            }}>
-              {tag}
-            </span>
-          ))}
-        </div>
-
         {/* Decorative background shape */}
         <div style={{
           position: 'absolute',

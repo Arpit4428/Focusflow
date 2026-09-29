@@ -146,6 +146,8 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
                     style={{
                       padding: '8px 10px',
                       fontSize: '13px',
+                      fontFamily: 'var(--font-digits)',
+                      fontVariantNumeric: 'tabular-nums',
                       fontWeight: isSelected ? 700 : 500,
                       borderRadius: 'var(--radius-md)',
                       backgroundColor: isSelected ? 'var(--text-1)' : 'var(--bg-subtle)',
@@ -175,7 +177,7 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
                   onChange={(e) => handleHoursChange(e.target.value)}
                   disabled={loading}
                   className="form-input"
-                  style={{ paddingRight: '42px', fontSize: '15px', fontWeight: 600 }}
+                  style={{ paddingRight: '42px', fontSize: '15px', fontWeight: 600, fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}
                 />
                 <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: 'var(--text-3)', pointerEvents: 'none' }}>
                   hrs
@@ -194,7 +196,7 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
                   onChange={(e) => handleMinutesChange(e.target.value)}
                   disabled={loading}
                   className="form-input"
-                  style={{ paddingRight: '42px', fontSize: '15px', fontWeight: 600 }}
+                  style={{ paddingRight: '42px', fontSize: '15px', fontWeight: 600, fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}
                 />
                 <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: 'var(--text-3)', pointerEvents: 'none' }}>
                   mins
@@ -213,7 +215,7 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
             marginBottom: '18px',
           }}>
             <span>Range: <strong style={{ color: 'var(--text-2)' }}>15 min – 12 hrs</strong></span>
-            <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>
+            <span style={{ fontWeight: 700, fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-1)' }}>
               Total: {totalMinutes}m
             </span>
           </div>

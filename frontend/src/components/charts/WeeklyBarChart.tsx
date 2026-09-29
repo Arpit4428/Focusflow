@@ -26,10 +26,10 @@ export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data }) => {
           <p style={{ fontSize: '12px', color: 'var(--text-3)', margin: 0 }}>Daily study minutes — past 7 days</p>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <span style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>
+          <span style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '22px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}m
           </span>
-          <span style={{ fontSize: '11px', color: 'var(--text-3)', display: 'block', fontWeight: 600, marginTop: '1px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: 600, marginTop: '1px' }}>
             7-day aggregate
           </span>
         </div>
@@ -79,9 +79,11 @@ export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data }) => {
               >
                 {/* Minute Label */}
                 <span style={{
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  color: dayStat.minutes > 0 ? 'var(--text-1)' : 'transparent',
+                  fontFamily: 'var(--font-digits)',
+                  fontVariantNumeric: 'tabular-nums',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: dayStat.minutes > 0 ? 'var(--text-primary)' : 'transparent',
                   marginBottom: '6px',
                   userSelect: 'none',
                 }}>

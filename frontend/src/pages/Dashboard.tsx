@@ -1,30 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { dashboardService } from '../services/dashboardService';
 import { taskService } from '../services/taskService';
 import { sessionService } from '../services/sessionService';
-import { WeeklyBarChart } from '../components/charts/WeeklyBarChart';
-import { FocusHistoryList } from '../components/focus/FocusHistoryList';
 import { DailyGoalModal } from '../components/dashboard/DailyGoalModal';
 import { userService } from '../services/userService';
 import type { DashboardData } from '../types/dashboard';
 import type { ApiError } from '../types/auth';
 import {
   Clock,
-  CheckCircle2,
   Play,
-  Plus,
   ArrowRight,
   AlertCircle,
+  Sliders,
+  CheckCircle2,
   Circle,
-  Layers,
-  Pencil,
+  Sparkles,
+  BookOpen,
   TrendingUp,
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [data, setData] = useState<DashboardData | null>(null);
@@ -78,19 +74,18 @@ export const Dashboard: React.FC = () => {
     fetchDashboard();
   };
 
-  const formatSeconds = (totalSecs: number) => {
+  const formatDurationParts = (totalSecs: number) => {
     const hrs = Math.floor(totalSecs / 3600);
     const mins = Math.floor((totalSecs % 3600) / 60);
-    if (hrs > 0) return `${hrs}h ${mins}m`;
-    if (mins > 0) return `${mins}m`;
-    return '0m';
+    const secs = totalSecs % 60;
+    return { hrs, mins, secs };
   };
 
   const formatGoal = (totalMins: number) => {
     const hrs = Math.floor(totalMins / 60);
     const mins = totalMins % 60;
-    if (hrs > 0 && mins > 0) return `${hrs}h ${mins.toString().padStart(2, '0')}m`;
-    if (hrs > 0) return `${hrs}h 00m`;
+    if (hrs > 0 && mins > 0) return `${hrs}h ${mins}m`;
+    if (hrs > 0) return `${hrs}h`;
     return `${mins}m`;
   };
 
@@ -101,26 +96,27 @@ export const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '120px 20px', gap: '16px' }}>
         <div style={{
-          width: '36px', height: '36px',
-          border: '2.5px solid var(--border)',
+          width: '32px',
+          height: '32px',
+          border: '2px solid var(--border)',
           borderTopColor: 'var(--accent)',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
-        <p style={{ color: 'var(--text-3)', fontSize: '13px' }}>Loading your dashboard...</p>
+        <span className="text-meta">Synthesizing study velocity...</span>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div style={{ padding: '40px 0' }}>
+      <div style={{ padding: '60px 0', maxWidth: '600px', margin: '0 auto' }}>
         <div className="alert-banner alert-danger">
           <AlertCircle size={16} />
           <span>{error || 'Unable to fetch dashboard metrics.'}</span>
-          <button onClick={fetchDashboard} style={{ marginLeft: 'auto', textDecoration: 'underline', background: 'none', color: 'inherit', fontWeight: 600 }}>
+          <button onClick={fetchDashboard} style={{ marginLeft: 'auto', textDecoration: 'underline', color: 'inherit', fontWeight: 600 }}>
             Retry
           </button>
         </div>
@@ -131,478 +127,622 @@ export const Dashboard: React.FC = () => {
   const goalMinutes = data.dailyFocusGoalMinutes || 120;
   const goalSeconds = goalMinutes * 60;
   const isGoalReached = data.todayFocusSeconds >= goalSeconds;
-  const overMinutes = Math.floor((data.todayFocusSeconds - goalSeconds) / 60);
-  const remainingMinutes = Math.max(0, Math.round((goalSeconds - data.todayFocusSeconds) / 60));
+  const todayMinutes = Math.floor(data.todayFocusSeconds / 60);
   const progressPercent = Math.min(100, Math.round((data.todayFocusSeconds / goalSeconds) * 100));
+  const { hrs, mins } = formatDurationParts(data.todayFocusSeconds);
+
+  // Maximum minutes for weekly rhythm scale
+  const maxWeeklyMinutes = Math.max(...data.weeklyFocus.map((d) => d.minutes), 60);
 
   return (
-    <div className="page-enter" style={{ maxWidth: '1360px', margin: '0 auto' }}>
-
-      {/* ── Page Header ── */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: '40px',
-        flexWrap: 'wrap',
-        gap: '20px',
-      }}>
-        <div>
-          <div style={{
-            fontSize: '11px', fontWeight: 700,
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: 'var(--text-3)', marginBottom: '10px',
-          }}>
-            Academic Command Studio
-          </div>
-          <h1 className="title-hero">
-            Welcome back, {user?.name?.split(' ')[0] || 'Student'}
+    <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: '56px' }}>
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 1: ASYMMETRIC EDITORIAL HERO (Direct Reference Adaptation)
+          Left: Oversized Serif Headline & Academic Narrative
+          Right: High-Precision Focus Centerpiece & Priority Queue
+          ═══════════════════════════════════════════════════════════════ */}
+      <section
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1.25fr) minmax(360px, 1fr)',
+          gap: '48px',
+          alignItems: 'start',
+        }}
+        className="hero-grid"
+      >
+        {/* ── Left Column: Editorial Hero & Actions ── */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            gap: '40px',
+            maxWidth: '640px',
+            paddingTop: '16px',
+            paddingBottom: '16px',
+          }}
+        >
+          {/* Main Heading (Editorial Serif) */}
+          <h1 className="display-hero" style={{ margin: 0, lineHeight: 1.05 }}>
+            The Focus Studio <br />
+            <span className="display-hero-italic">Your Academic Velocity</span> <br />
+            Has Been Waiting For.
           </h1>
-          <p style={{ color: 'var(--text-2)', fontSize: '15px', marginTop: '8px', maxWidth: '460px', lineHeight: 1.5 }}>
-            Here is your daily study activity, focus momentum, and academic rhythm.
-          </p>
+
+          {/* High-contrast Action Pill Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => navigate('/focus')}
+              className="btn btn-primary"
+              style={{
+                padding: '12px 28px',
+                fontSize: '14px',
+                gap: '10px',
+              }}
+            >
+              <Play size={14} fill="currentColor" />
+              <span>Launch Focus Studio</span>
+              <ArrowRight size={14} />
+            </button>
+
+            <button
+              onClick={() => navigate('/tasks')}
+              className="btn btn-outline"
+              style={{
+                padding: '12px 24px',
+                fontSize: '14px',
+              }}
+            >
+              <span>Manage Coursework</span>
+            </button>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
-          <button
-            onClick={() => navigate('/tasks')}
-            className="btn btn-outline"
-            style={{ padding: '10px 20px' }}
+        {/* ── Right Column: The Layered Interface Centerpiece ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Card 1: Today's Focus Centerpiece (Styled like Transfer Widget in Reference) */}
+          <div
+            className="editorial-panel corner-ticks"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              boxShadow: 'var(--shadow-md)',
+            }}
           >
-            <Plus size={15} />
-            <span>New Task</span>
-          </button>
-          <button
-            onClick={() => navigate('/focus')}
-            className="btn btn-primary"
-            style={{ padding: '10px 22px' }}
-          >
-            <Play size={14} fill="currentColor" />
-            <span>Start Focus</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ── Hero Row: Focus + Tasks ── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: '20px',
-        marginBottom: '20px',
-      }}>
-        {/* Today's Focus Hero Card */}
-        <div style={{
-          backgroundColor: 'var(--accent)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '32px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          color: '#fff',
-          position: 'relative',
-          overflow: 'hidden',
-          minHeight: '280px',
-        }}>
-          {/* Decorative circle */}
-          <div style={{
-            position: 'absolute', top: '-40px', right: '-40px',
-            width: '200px', height: '200px', borderRadius: '50%',
-            backgroundColor: 'rgba(255,255,255,0.06)', pointerEvents: 'none',
-          }} />
-
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', opacity: 0.75 }}>
-                <Clock size={13} />
-                <span>Today's Focus Time</span>
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Clock size={14} style={{ color: 'var(--text-muted)' }} />
+                <span className="text-meta">Today's Focus Duration</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsGoalModalOpen(true)}
+                className="btn-ghost"
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '5px',
-                  background: 'rgba(255,255,255,0.15)',
-                  border: '1px solid rgba(255,255,255,0.25)',
-                  borderRadius: 'var(--radius-pill)',
-                  padding: '4px 10px',
-                  fontSize: '11px', color: '#fff', fontWeight: 600,
-                  cursor: 'pointer', transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: 'var(--font-digits)',
+                  fontVariantNumeric: 'tabular-nums',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border)',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'; }}
-                title="Edit Daily Focus Goal"
-                aria-label="Edit Daily Focus Goal"
+                title="Edit Daily Goal Target"
               >
-                <span>Goal: {formatGoal(goalMinutes)}</span>
-                <Pencil size={10} />
+                <span>TARGET: {formatGoal(goalMinutes)}</span>
+                <Sliders size={11} />
               </button>
             </div>
 
-            <div style={{
-              fontSize: 'clamp(44px, 8vw, 64px)',
-              fontWeight: 700,
-              letterSpacing: '-0.04em',
-              lineHeight: 1,
-              marginBottom: '14px',
-            }}>
-              {formatSeconds(data.todayFocusSeconds)}
+            {/* Refined Sans-Serif Digital Display */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '14px', flexWrap: 'wrap' }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-digits)',
+                  fontVariantNumeric: 'tabular-nums',
+                  fontSize: 'clamp(44px, 5.5vw, 62px)',
+                  fontWeight: 600,
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1,
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}
+                <span style={{ fontSize: '20px', fontWeight: 400, color: 'var(--text-muted)', marginLeft: '8px' }}>
+                  logged
+                </span>
+              </div>
+
+              {isGoalReached && (
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: 600,
+                    color: '#86EFAC',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--accent-olive-light)',
+                    border: '1px solid rgba(134, 239, 172, 0.25)',
+                  }}
+                >
+                  <Sparkles size={11} /> GOAL ACHIEVED
+                </span>
+              )}
             </div>
 
-            <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '20px', lineHeight: 1.4 }}>
-              {isGoalReached
-                ? overMinutes > 0
-                  ? `Goal exceeded — ${overMinutes} ${overMinutes === 1 ? 'minute' : 'minutes'} over`
-                  : '✓ Daily target achieved!'
-                : `${remainingMinutes}m remaining to reach your ${formatGoal(goalMinutes)} goal`}
-            </p>
-
-            {/* Progress bar */}
-            <div style={{
-              width: '100%', height: '4px',
-              backgroundColor: 'rgba(255,255,255,0.25)',
-              borderRadius: 'var(--radius-pill)',
-              overflow: 'hidden',
-              marginBottom: '28px',
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${progressPercent}%`,
-                backgroundColor: 'rgba(255,255,255,0.9)',
-                borderRadius: 'var(--radius-pill)',
-                transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)',
-              }} />
-            </div>
-          </div>
-
-          <button
-            onClick={() => navigate('/focus')}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              backgroundColor: 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.25)',
-              borderRadius: 'var(--radius-md)',
-              padding: '12px 18px',
-              color: '#fff', fontWeight: 600, fontSize: '14px',
-              cursor: 'pointer', transition: 'all 0.15s ease',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.15)'; }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Play size={15} fill="currentColor" />
-              <span>Launch Focus Studio</span>
-            </span>
-            <ArrowRight size={15} />
-          </button>
-        </div>
-
-        {/* Tasks Status Card */}
-        <div style={{
-          backgroundColor: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '32px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          boxShadow: 'var(--shadow-md)',
-          minHeight: '280px',
-        }}>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <span className="text-meta">Study Tasks Status</span>
-              <span className="badge badge-status-PENDING">
-                {data.pendingTasks} pending
-              </span>
+            {/* Segmented Progress Track Visualization */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-muted)' }}>
+                <span>{todayMinutes}m of {goalMinutes}m target</span>
+                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{progressPercent}% Complete</span>
+              </div>
+              <div
+                style={{
+                  width: '100%',
+                  height: '6px',
+                  backgroundColor: 'var(--bg-subtle)',
+                  borderRadius: '9999px',
+                  overflow: 'hidden',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${progressPercent}%`,
+                    backgroundColor: isGoalReached ? 'var(--accent-amber)' : 'var(--text-primary)',
+                    borderRadius: '9999px',
+                    transition: 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                  }}
+                />
+              </div>
             </div>
 
-            <div style={{
-              fontSize: 'clamp(28px, 4vw, 38px)',
-              fontWeight: 700,
-              letterSpacing: '-0.03em',
-              color: 'var(--text-1)',
-              marginBottom: '6px',
-              lineHeight: 1,
-            }}>
-              {data.completedTasks}
-              <span style={{ fontSize: '16px', fontWeight: 500, color: 'var(--text-3)', marginLeft: '8px' }}>
-                of {data.totalTasks} completed
-              </span>
-            </div>
-
-            <p style={{ fontSize: '13px', color: 'var(--text-2)', marginBottom: '20px' }}>
-              {data.totalTasks > 0
-                ? `${data.completedTasks} of ${data.totalTasks} total coursework tasks completed.`
-                : 'No tasks scheduled yet for your courses.'}
-            </p>
-
-            <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-3)' }}>
-              <span>Completion progress</span>
-              <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{data.taskCompletionRate}%</span>
-            </div>
-            <div style={{
-              width: '100%', height: '6px',
-              backgroundColor: 'var(--bg-subtle)',
-              borderRadius: 'var(--radius-pill)',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                height: '100%',
-                width: `${data.taskCompletionRate}%`,
-                backgroundColor: 'var(--accent)',
-                borderRadius: 'var(--radius-pill)',
-                transition: 'width 0.5s ease',
-              }} />
-            </div>
-          </div>
-
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            paddingTop: '20px', borderTop: '1px solid var(--border)',
-          }}>
-            <Link
-              to="/tasks"
+            {/* Quick Action Button: Launch Focus Mode directly */}
+            <button
+              onClick={() => navigate('/focus')}
+              className="btn btn-outline"
               style={{
-                fontSize: '13px', fontWeight: 700,
-                color: 'var(--text-1)',
-                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                width: '100%',
+                padding: '11px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
               }}
             >
-              <span>Manage Coursework Tasks</span>
-              <ArrowRight size={13} />
-            </Link>
-            <TrendingUp size={16} color="var(--text-3)" />
+              <Play size={13} fill="currentColor" />
+              <span>Resume Focus Session</span>
+            </button>
+          </div>
+
+          {/* Card 2: Priority Coursework Queue (Styled like Active Security/Transactions in Reference) */}
+          <div
+            className="editorial-panel"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: 'var(--accent-coral)', fontSize: '11px' }}>●</span>
+                <span className="text-meta">Priority Assignment Queue</span>
+              </div>
+              <Link
+                to="/tasks"
+                style={{
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: 600,
+                  color: 'var(--text-muted)',
+                  textDecoration: 'none',
+                }}
+              >
+                VIEW ALL ({data.pendingTasks}) →
+              </Link>
+            </div>
+
+            {/* Task Row Items */}
+            {data.recentTasks.length === 0 ? (
+              <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                No active coursework scheduled. All assignments clear.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {data.recentTasks.slice(0, 3).map((task) => {
+                  const isCompleted = task.status === 'COMPLETED';
+                  return (
+                    <div
+                      key={task.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        backgroundColor: 'var(--bg-subtle)',
+                        border: '1px solid var(--border)',
+                        transition: 'var(--transition-fast)',
+                        opacity: isCompleted ? 0.5 : 1,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <button
+                          onClick={() => handleToggleTask(task.id)}
+                          aria-label={isCompleted ? 'Mark pending' : 'Mark completed'}
+                          style={{
+                            color: isCompleted ? 'var(--accent-olive)' : 'var(--text-muted)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {isCompleted ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                        </button>
+                        <div style={{ minWidth: 0 }}>
+                          <div
+                            style={{
+                              fontSize: '13px',
+                              fontWeight: 500,
+                              color: 'var(--text-primary)',
+                              textDecoration: isCompleted ? 'line-through' : 'none',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {task.title}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', marginTop: '2px' }}>
+                            {task.subject}
+                          </div>
+                        </div>
+                      </div>
+
+                      <span className={`badge badge-priority-${task.priority}`} style={{ flexShrink: 0 }}>
+                        {task.priority}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── Weekly Chart ── */}
-      <div style={{ marginBottom: '20px' }}>
-        <WeeklyBarChart data={data.weeklyFocus} />
-      </div>
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 2: ASYMMETRIC ANALYTICAL MATRIX
+          Left: Weekly Consistency Timeline Visualizer
+          Right: Subject Distribution Breakdown
+          ═══════════════════════════════════════════════════════════════ */}
+      <section
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1.4fr) minmax(320px, 1fr)',
+          gap: '32px',
+        }}
+        className="analytics-grid"
+      >
+        {/* ── Left: Weekly Consistency Timeline Visualizer ── */}
+        <div className="editorial-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <TrendingUp size={14} style={{ color: 'var(--text-muted)' }} />
+                <span className="text-meta">Weekly Study Rhythm</span>
+              </div>
+              <h3 className="title-section">Consistency &amp; Output</h3>
+            </div>
 
-      {/* ── Subject Distribution ── */}
-      <div style={{
-        backgroundColor: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-xl)',
-        padding: '28px 30px',
-        boxShadow: 'var(--shadow-md)',
-        marginBottom: '20px',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {Math.floor(data.weeklyFocus.reduce((acc, d) => acc + d.minutes, 0) / 60)}h{' '}
+                {data.weeklyFocus.reduce((acc, d) => acc + d.minutes, 0) % 60}m
+              </div>
+              <span className="text-meta">7-DAY CUMULATIVE</span>
+            </div>
+          </div>
+
+          {/* Distinct Custom Timeline Visualizer */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              height: '180px',
+              paddingTop: '20px',
+              borderBottom: '1px solid var(--border)',
+              gap: '8px',
+            }}
+          >
+            {data.weeklyFocus.map((stat, idx) => {
+              const heightPct = Math.max(8, Math.round((stat.minutes / maxWeeklyMinutes) * 100));
+              const isToday = idx === data.weeklyFocus.length - 1;
+
+              return (
+                <div
+                  key={stat.date}
+                  style={{
+                    flex: 1,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    gap: '8px',
+                  }}
+                  title={`${stat.day}: ${stat.minutes} minutes`}
+                >
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-digits)',
+                      fontVariantNumeric: 'tabular-nums',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: stat.minutes > 0 ? 'var(--text-muted)' : 'transparent',
+                    }}
+                  >
+                    {stat.minutes > 0 ? `${stat.minutes}m` : '0'}
+                  </span>
+
+                  {/* Vertical bar pill with high contrast */}
+                  <div
+                    style={{
+                      width: '100%',
+                      maxWidth: '38px',
+                      height: `${heightPct}%`,
+                      borderRadius: '4px',
+                      backgroundColor: isToday
+                        ? (stat.minutes > 0 ? 'var(--accent)' : 'var(--border-strong)')
+                        : stat.minutes > 0
+                        ? 'var(--surface-raised)'
+                        : 'var(--bg-subtle)',
+                      border: isToday ? '1px solid var(--accent)' : '1px solid var(--border)',
+                      transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                  />
+
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '11px',
+                      fontWeight: isToday ? 700 : 500,
+                      color: isToday ? 'var(--text-primary)' : 'var(--text-muted)',
+                      paddingBottom: '8px',
+                    }}
+                  >
+                    {isToday ? 'TODAY' : stat.day}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>
+            <span>Target daily benchmark: {formatGoal(goalMinutes)}</span>
+            <Link to="/insights" style={{ textDecoration: 'underline', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '11px' }}>
+              DETAILED AUDIT →
+            </Link>
+          </div>
+        </div>
+
+        {/* ── Right: Subject Distribution Matrix ── */}
+        <div className="editorial-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <Layers size={16} style={{ color: 'var(--text-3)' }} />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)', margin: 0 }}>
-                Study Distribution by Subject
-              </h3>
+              <BookOpen size={14} style={{ color: 'var(--text-muted)' }} />
+              <span className="text-meta">Curriculum Distribution</span>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-2)' }}>
-              Academic focus volume across enrolled subjects
-            </p>
+            <h3 className="title-section">Subject Allocation</h3>
+          </div>
+
+          {(!data.subjectAnalytics || data.subjectAnalytics.length === 0) ? (
+            <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+              No subject logs recorded yet.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {data.subjectAnalytics.map((stat) => {
+                const subColor = stat.color || '#94a3b8';
+                return (
+                  <div key={stat.subjectId || stat.subjectName} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: subColor }} />
+                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{stat.subjectName}</span>
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {Math.floor(stat.focusSeconds / 3600)}h {Math.floor((stat.focusSeconds % 3600) / 60)}m ·{' '}
+                        <strong style={{ color: 'var(--text-primary)' }}>{stat.focusPercentage}%</strong>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: 'var(--bg-subtle)',
+                        borderRadius: '9999px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${Math.min(100, stat.focusPercentage)}%`,
+                          backgroundColor: subColor,
+                          borderRadius: '9999px',
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+            <Link
+              to="/subjects"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                color: 'var(--text-secondary)',
+                fontSize: '12px',
+                fontFamily: 'var(--font-sans)',
+                fontWeight: 600,
+              }}
+            >
+              <span>MANAGE SUBJECT COLORS &amp; TOPICS</span>
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 3: RECENT FOCUS SESSIONS CHRONOLOGICAL STREAM
+          ═══════════════════════════════════════════════════════════════ */}
+      <section className="editorial-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <span className="text-meta">Audit Record</span>
+            <h3 className="title-section" style={{ marginTop: '2px' }}>Recent Focus Sessions</h3>
           </div>
           <Link
-            to="/subjects"
-            style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}
+            to="/history"
+            style={{
+              fontSize: '12px',
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 600,
+              color: 'var(--text-primary)',
+              textDecoration: 'underline',
+              textUnderlineOffset: '3px',
+            }}
           >
-            <span>Manage Subjects</span>
-            <ArrowRight size={13} />
+            VIEW FULL LOG ({data.recentSessions.length}) →
           </Link>
         </div>
 
-        {(!data.subjectAnalytics ||
-          data.subjectAnalytics.length === 0 ||
-          data.subjectAnalytics.every((s) => s.focusSeconds === 0 && s.totalTasks === 0)) ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '32px 20px',
-            backgroundColor: 'var(--bg-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px dashed var(--border-strong)',
-          }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '4px' }}>No study data yet</p>
-            <p style={{ fontSize: '12px', color: 'var(--text-2)', margin: '0 0 16px' }}>
-              Create a subject and start a focus session to see your study distribution.
-            </p>
-            <Link to="/subjects" className="btn btn-outline" style={{ display: 'inline-flex', padding: '7px 16px', fontSize: '12px' }}>
-              <span>Go to Subjects</span>
-              <ArrowRight size={12} />
-            </Link>
+        {data.recentSessions.length === 0 ? (
+          <div style={{ padding: '36px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+            No focus intervals logged today yet. Launch the Focus Studio to record your first session.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            {data.subjectAnalytics.map((stat) => {
-              const barColor = stat.color || '#94a3b8';
+          <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--border)' }}>
+            {data.recentSessions.slice(0, 4).map((sess) => {
+              const durationMins = Math.floor(sess.duration / 60);
+              const durationSecs = sess.duration % 60;
+              const formattedDuration = durationMins > 0 ? `${durationMins}m ${durationSecs}s` : `${durationSecs}s`;
+              const startDate = new Date(sess.startedAt).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+              });
+              const startTime = new Date(sess.startedAt).toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+              });
+
               return (
-                <div key={stat.subjectId || stat.subjectName} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: barColor, flexShrink: 0 }} />
-                      <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-1)' }}>{stat.subjectName}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{formatSeconds(stat.focusSeconds)}</span>
-                      <span style={{ color: 'var(--text-3)', fontWeight: 500 }}>{stat.focusPercentage}%</span>
-                      {stat.totalTasks > 0 && (
-                        <span style={{ fontSize: '11px', color: 'var(--text-2)' }}>
-                          {stat.completedTasks}/{stat.totalTasks} tasks
-                        </span>
-                      )}
+                <div
+                  key={sess.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 0',
+                    borderBottom: '1px solid var(--border)',
+                    fontSize: '13px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent-olive)',
+                      }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{sess.subject}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', marginTop: '2px' }}>
+                        {startDate} at {startTime}
+                      </div>
                     </div>
                   </div>
-                  <div style={{
-                    width: '100%', height: '8px',
-                    backgroundColor: 'var(--bg-subtle)',
-                    borderRadius: 'var(--radius-pill)',
-                    overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      height: '100%',
-                      width: `${Math.min(100, Math.max(0, stat.focusPercentage))}%`,
-                      backgroundColor: barColor,
-                      borderRadius: 'var(--radius-pill)',
-                      transition: 'width 0.4s ease',
-                    }} />
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-digits)',
+                        fontVariantNumeric: 'tabular-nums',
+                        fontWeight: 600,
+                        color: 'var(--text-primary)',
+                      }}
+                    >
+                      {formattedDuration}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteSession(sess.id)}
+                      style={{
+                        color: 'var(--text-muted)',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-sans)',
+                        fontWeight: 600,
+                        padding: '4px',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-coral)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                      title="Delete record"
+                    >
+                      DELETE
+                    </button>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* ── Two Column: Tasks + Sessions ── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-        gap: '20px',
-      }}>
-        {/* Active Tasks */}
-        <div style={{
-          backgroundColor: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '28px',
-          boxShadow: 'var(--shadow-md)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '22px' }}>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)', marginBottom: '2px' }}>
-                Active Tasks
-              </h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-3)' }}>Recent assignments &amp; study goals</p>
-            </div>
-            <Link
-              to="/tasks"
-              style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <span>View all</span>
-              <ArrowRight size={13} />
-            </Link>
-          </div>
-
-          {data.recentTasks.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '36px 16px',
-              backgroundColor: 'var(--bg-subtle)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1px dashed var(--border-strong)',
-            }}>
-              <p style={{ color: 'var(--text-2)', fontSize: '13px', marginBottom: '14px' }}>No tasks added yet.</p>
-              <Link to="/tasks" className="btn btn-outline" style={{ display: 'inline-flex', fontSize: '12px', padding: '7px 14px' }}>
-                <Plus size={13} />
-                <span>Create First Task</span>
-              </Link>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {data.recentTasks.map((task) => {
-                const isCompleted = task.status === 'COMPLETED';
-                return (
-                  <div
-                    key={task.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px 14px',
-                      backgroundColor: isCompleted ? 'var(--bg-subtle)' : 'var(--surface)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border)',
-                      opacity: isCompleted ? 0.65 : 1,
-                      transition: 'var(--transition)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-                      <button
-                        onClick={() => handleToggleTask(task.id)}
-                        aria-label={isCompleted ? 'Mark pending' : 'Mark completed'}
-                        style={{ background: 'none', color: isCompleted ? 'var(--accent)' : 'var(--text-3)', padding: '2px', display: 'flex', alignItems: 'center', flexShrink: 0 }}
-                      >
-                        {isCompleted ? <CheckCircle2 size={18} color="var(--accent)" /> : <Circle size={18} />}
-                      </button>
-                      <div style={{ overflow: 'hidden' }}>
-                        <div style={{
-                          fontSize: '13.5px', fontWeight: 500,
-                          textDecoration: isCompleted ? 'line-through' : 'none',
-                          color: isCompleted ? 'var(--text-3)' : 'var(--text-1)',
-                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        }}>
-                          {task.title}
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '1px' }}>{task.subject}</div>
-                      </div>
-                    </div>
-                    <span className={`badge badge-priority-${task.priority}`} style={{ flexShrink: 0, marginLeft: '8px' }}>
-                      {task.priority}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Recent Focus Sessions */}
-        <div style={{
-          backgroundColor: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '28px',
-          boxShadow: 'var(--shadow-md)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '22px' }}>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--text-1)', marginBottom: '2px' }}>
-                Recent Focus Sessions
-              </h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-3)' }}>Latest completed study intervals</p>
-            </div>
-            <Link
-              to="/history"
-              style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <span>Full History</span>
-              <ArrowRight size={13} />
-            </Link>
-          </div>
-
-          <FocusHistoryList
-            sessions={data.recentSessions}
-            onDeleteSession={handleDeleteSession}
-            emptyMessage="No focus sessions yet. Start your first session to build momentum!"
-          />
-        </div>
-      </div>
-
+      {/* Goal Modal */}
       <DailyGoalModal
         isOpen={isGoalModalOpen}
         currentGoalMinutes={data.dailyFocusGoalMinutes || 120}
         onClose={() => setIsGoalModalOpen(false)}
         onSave={handleSaveGoal}
       />
+
+      {/* Responsive layout rules */}
+      <style>{`
+        @media (max-width: 960px) {
+          .hero-grid {
+            grid-template-columns: 1fr !important;
+            gap: 36px !important;
+          }
+          .analytics-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

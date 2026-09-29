@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { FocusTimerProvider } from './context/FocusTimerContext';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
@@ -16,9 +17,10 @@ import { Calendar } from './pages/Calendar';
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <FocusTimerProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <FocusTimerProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -100,6 +102,7 @@ export const App: React.FC = () => {
       </FocusTimerProvider>
     </BrowserRouter>
   </AuthProvider>
+</ThemeProvider>
   );
 };
 

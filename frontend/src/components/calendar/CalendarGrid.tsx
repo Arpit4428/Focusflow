@@ -327,6 +327,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               {/* Day Header: Number + Focus Badge */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{
+                  fontFamily: 'var(--font-digits)',
+                  fontVariantNumeric: 'tabular-nums',
                   fontSize: '13px',
                   fontWeight: isSelected || isToday ? 700 : 500,
                   color: dayNumColor,
@@ -336,8 +338,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
                 {hasFocus && (
                   <span style={{
+                    fontFamily: 'var(--font-digits)',
+                    fontVariantNumeric: 'tabular-nums',
                     fontSize: '10px',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     backgroundColor: isTextLight ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)',
                     color: isTextLight ? '#FFFFFF' : 'var(--text-primary)',
                     padding: '1px 5px',
@@ -353,6 +357,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px' }}>
                 {hasTasks && activity && (
                   <div style={{
+                    fontFamily: 'var(--font-digits)',
+                    fontVariantNumeric: 'tabular-nums',
                     fontSize: '10px',
                     color: metaTextColor,
                     fontWeight: 500,

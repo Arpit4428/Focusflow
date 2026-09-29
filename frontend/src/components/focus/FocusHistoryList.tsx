@@ -129,14 +129,14 @@ export const FocusHistoryList: React.FC<FocusHistoryListProps> = ({
                     Completed
                   </span>
                 </div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                   {formatDuration(session.duration)}
                 </div>
               </div>
             </div>
 
             {/* Date & Time Range + Delete */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', fontSize: '12px', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-muted)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <Calendar size={12} />
                 <span>{formatDate(session.startedAt)}</span>

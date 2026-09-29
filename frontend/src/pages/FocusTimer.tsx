@@ -188,11 +188,13 @@ export const FocusTimer: React.FC = () => {
           {/* ── Giant Timer Display ── */}
           <div style={{
             textAlign: 'center',
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontFamily: 'var(--font-digits)',
+            fontVariantNumeric: 'tabular-nums',
+            fontFeatureSettings: '"tnum" 1',
             fontSize: 'clamp(64px, 14vw, 108px)',
-            fontWeight: 700,
-            letterSpacing: '-0.04em',
-            color: isRunning ? 'var(--accent)' : isPaused ? 'var(--mustard)' : 'var(--text-1)',
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+            color: isRunning ? 'var(--accent)' : isPaused ? 'var(--accent-amber)' : 'var(--text-primary)',
             lineHeight: 1,
             marginBottom: '36px',
             transition: 'color 0.3s ease',
@@ -342,7 +344,7 @@ export const FocusTimer: React.FC = () => {
             <Clock size={15} color="var(--text-3)" />
             <span className="text-meta">Today's Focus Time</span>
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-1)' }}>
+          <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
             {loadingSessions ? '—' : formatSecondsHuman(todaySeconds)}
           </div>
         </div>
@@ -361,7 +363,7 @@ export const FocusTimer: React.FC = () => {
             <Play size={15} color="var(--text-3)" />
             <span className="text-meta">Sessions Today</span>
           </div>
-          <div style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-1)' }}>
+          <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
             {loadingSessions ? '—' : todaySessions.length}
           </div>
         </div>

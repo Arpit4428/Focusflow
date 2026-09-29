@@ -114,7 +114,7 @@ export const DayActivityPanel: React.FC<DayActivityPanelProps> = ({
             <Clock size={13} />
             <span>Focus Time</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginTop: '4px' }}>
+          <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginTop: '4px' }}>
             {activity ? formatSeconds(activity.totalFocusSeconds) : '0m'}
           </div>
         </div>
@@ -128,7 +128,7 @@ export const DayActivityPanel: React.FC<DayActivityPanelProps> = ({
             <CheckCircle2 size={13} />
             <span>Tasks Done</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginTop: '4px' }}>
+          <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginTop: '4px' }}>
             {activity ? `${activity.completedTaskCount} / ${activity.taskCount}` : '0 / 0'}
           </div>
         </div>
@@ -178,7 +178,7 @@ export const DayActivityPanel: React.FC<DayActivityPanelProps> = ({
                             {sb.subjectName}
                           </span>
                         </div>
-                        <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
+                        <span style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-secondary)', fontWeight: 500 }}>
                           {formatSeconds(sb.focusSeconds)} ({pct}%)
                         </span>
                       </div>
@@ -311,7 +311,7 @@ export const DayActivityPanel: React.FC<DayActivityPanelProps> = ({
                         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                           {sess.subject}
                         </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
                           {sess.startedAt ? formatTime(sess.startedAt) : ''}
                           {sess.endedAt ? ` - ${formatTime(sess.endedAt)}` : ''}
                         </div>
@@ -319,7 +319,9 @@ export const DayActivityPanel: React.FC<DayActivityPanelProps> = ({
                     </div>
                     <span style={{
                       fontSize: '12px',
-                      fontWeight: 700,
+                      fontFamily: 'var(--font-digits)',
+                      fontVariantNumeric: 'tabular-nums',
+                      fontWeight: 600,
                       backgroundColor: 'var(--surface-sage)',
                       color: 'var(--text-primary)',
                       padding: '3px 8px',

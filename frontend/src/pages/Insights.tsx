@@ -136,7 +136,7 @@ export const Insights: React.FC = () => {
                 <span>Total Focus Time</span>
               </div>
               <div>
-                <div style={{ fontSize: 'clamp(32px, 5vw, 44px)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '6px' }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: 'clamp(32px, 5vw, 44px)', fontWeight: 600, letterSpacing: '-0.03em', lineHeight: 1, marginBottom: '6px' }}>
                   {formatDuration(data.totalFocusSeconds)}
                 </div>
                 <div style={{ fontSize: '12px', opacity: 0.75 }}>All-time cumulative study volume</div>
@@ -160,7 +160,7 @@ export const Insights: React.FC = () => {
                 <span className="text-meta">Avg Session</span>
               </div>
               <div>
-                <div style={{ fontSize: '32px', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-1)', lineHeight: 1, marginBottom: '6px' }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '32px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-1)', lineHeight: 1, marginBottom: '6px' }}>
                   {formatDuration(data.averageSessionDurationSeconds)}
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>
@@ -186,7 +186,7 @@ export const Insights: React.FC = () => {
                 <span className="text-meta">Task Completion</span>
               </div>
               <div>
-                <div style={{ fontSize: '32px', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-1)', lineHeight: 1, marginBottom: '6px' }}>
+                <div style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', fontSize: '32px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-1)', lineHeight: 1, marginBottom: '6px' }}>
                   {data.taskCompletionRate}%
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>
@@ -246,7 +246,7 @@ export const Insights: React.FC = () => {
                     <div key={item.subject}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '7px' }}>
                         <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{item.subject}</span>
-                        <span style={{ color: 'var(--text-2)' }}>
+                        <span style={{ fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-2)' }}>
                           {formatDuration(item.durationSeconds)} — <strong style={{ color: 'var(--text-1)' }}>{item.percentage}%</strong>
                         </span>
                       </div>
@@ -310,7 +310,7 @@ export const Insights: React.FC = () => {
                           <span className="badge badge-status-COMPLETED" style={{ fontSize: '9px', fontWeight: 700 }}>Top Day</span>
                         )}
                       </div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-2)', textAlign: 'right' }}>
+                      <div style={{ fontSize: '13px', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums', color: 'var(--text-2)', textAlign: 'right' }}>
                         {item.durationSeconds > 0 ? (
                           <>
                             <strong style={{ color: 'var(--text-1)' }}>{formatDuration(item.durationSeconds)}</strong>
