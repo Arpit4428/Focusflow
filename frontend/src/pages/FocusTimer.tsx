@@ -15,6 +15,8 @@ import {
   AlertCircle,
   Clock,
   BookOpen,
+  ExternalLink,
+  Info,
 } from 'lucide-react';
 
 export const FocusTimer: React.FC = () => {
@@ -28,9 +30,13 @@ export const FocusTimer: React.FC = () => {
     start,
     pause,
     resume,
-    stop,
+    stopAndSave,
     reset,
     setSelectedSubject,
+    isPipSupported,
+    isPipActive,
+    openPip,
+    closePip,
   } = useFocusTimer();
 
   const navigate = useNavigate();
@@ -97,7 +103,7 @@ export const FocusTimer: React.FC = () => {
   const handleStop = async () => {
     setFeedback(null);
     try {
-      await stop();
+      await stopAndSave();
       setFeedback({ type: 'success', message: 'Session saved! Great work.' });
       await fetchTodaySessions();
     } catch (err) {
@@ -155,7 +161,7 @@ export const FocusTimer: React.FC = () => {
         boxShadow: 'var(--shadow-lg)',
         marginBottom: '20px',
       }}>
-        {/* Top status bar & progress track (Themed correctly in both dark & light modes) */}
+        {/* Top status bar & progress track */}
         <div style={{
           backgroundColor: 'var(--bg-subtle)',
           borderBottom: '1px solid var(--border)',
@@ -166,6 +172,7 @@ export const FocusTimer: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: '12px',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {isRunning && (
@@ -205,22 +212,46 @@ export const FocusTimer: React.FC = () => {
               </span>
             </div>
 
-            {selectedSubjectName && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                <span style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: selectedSubjectColor || 'var(--accent-olive)',
-                }} />
-                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                  {selectedSubjectName}
-                </span>
-              </div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {selectedSubjectName && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  <span style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: selectedSubjectColor || 'var(--accent-olive)',
+                  }} />
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    {selectedSubjectName}
+                  </span>
+                </div>
+              )}
+
+              {/* Header pop-out quick button when active */}
+              {isPipSupported && isActive && (
+                <button
+                  type="button"
+                  onClick={isPipActive ? closePip : openPip}
+                  className="btn btn-outline"
+                  style={{
+                    padding: '3px 10px',
+                    fontSize: '11px',
+                    height: '26px',
+                    borderRadius: 'var(--radius-btn)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                  title={isPipActive ? 'Close floating window' : 'Pop out floating mini window'}
+                >
+                  <ExternalLink size={12} />
+                  <span>{isPipActive ? 'Floating Active' : 'Pop Out'}</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Progress track (styled with muted surface/border color, active indicator when running/paused) */}
+          {/* Progress track */}
           {isActive && (
             <div
               style={{
@@ -325,12 +356,32 @@ export const FocusTimer: React.FC = () => {
           )}
 
           {/* ── Action Buttons ── */}
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
             {isIdle && (
-              <button onClick={handleStart} className="btn btn-primary" style={{ padding: '12px 32px', fontSize: '15px', minWidth: '160px' }}>
-                <Play size={16} fill="currentColor" />
-                <span>Start Session</span>
-              </button>
+              <>
+                <button onClick={handleStart} className="btn btn-primary" style={{ padding: '12px 32px', fontSize: '15px', minWidth: '160px' }}>
+                  <Play size={16} fill="currentColor" />
+                  <span>Start Session</span>
+                </button>
+
+                {isPipSupported && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFeedback({
+                        type: 'error',
+                        message: 'Select a subject and click "Start Session" to open the floating mini window.',
+                      });
+                    }}
+                    className="btn btn-outline"
+                    style={{ padding: '12px 20px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '7px' }}
+                    title="Pop out floating timer (requires active session)"
+                  >
+                    <ExternalLink size={14} />
+                    <span>Pop out timer</span>
+                  </button>
+                )}
+              </>
             )}
 
             {isRunning && (
@@ -368,10 +419,50 @@ export const FocusTimer: React.FC = () => {
             )}
 
             {isActive && (
-              <button onClick={handleReset} className="btn btn-danger" style={{ padding: '12px 20px', fontSize: '15px' }}>
-                <RotateCcw size={14} />
-                <span>Reset</span>
-              </button>
+              <>
+                {/* Pop out timer button / Fallback indicator */}
+                {isPipSupported ? (
+                  <button
+                    type="button"
+                    onClick={isPipActive ? closePip : openPip}
+                    className="btn btn-outline"
+                    style={{
+                      padding: '12px 22px',
+                      fontSize: '15px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                    title={isPipActive ? 'Dock floating timer back to page' : 'Pop out timer into an always-on-top floating mini player'}
+                  >
+                    <ExternalLink size={15} />
+                    <span>{isPipActive ? 'Dock Timer' : 'Pop out timer'}</span>
+                  </button>
+                ) : (
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '12px',
+                      color: 'var(--text-muted)',
+                      padding: '10px 14px',
+                      borderRadius: 'var(--radius-btn)',
+                      backgroundColor: 'var(--bg-subtle)',
+                      border: '1px solid var(--border)',
+                    }}
+                    title="Document Picture-in-Picture API is supported in Chrome & Edge (v116+). The in-app mini timer remains active when navigating across Veyro."
+                  >
+                    <Info size={13} />
+                    <span>In-app mini timer active</span>
+                  </div>
+                )}
+
+                <button onClick={handleReset} className="btn btn-danger" style={{ padding: '12px 20px', fontSize: '15px' }}>
+                  <RotateCcw size={14} />
+                  <span>Reset</span>
+                </button>
+              </>
             )}
           </div>
         </div>

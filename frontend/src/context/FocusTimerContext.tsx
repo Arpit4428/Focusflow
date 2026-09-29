@@ -1,6 +1,9 @@
 import React, { createContext, useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import type { TimerStatus, CompletedSessionData } from '../hooks/useTimer';
+import { sessionService } from '../services/sessionService';
+import { PipFloatingTimer } from '../components/focus/PipFloatingTimer';
 
 export interface FocusTimerContextType {
   status: TimerStatus;
@@ -14,7 +17,13 @@ export interface FocusTimerContextType {
   pause: () => void;
   resume: () => void;
   stop: () => CompletedSessionData | null;
+  stopAndSave: () => Promise<CompletedSessionData | null>;
   reset: () => void;
+  // Picture-in-Picture Mini Player
+  isPipSupported: boolean;
+  isPipActive: boolean;
+  openPip: () => Promise<void>;
+  closePip: () => void;
 }
 
 const TIMER_STORAGE_KEY = 'focusflow_active_timer';
@@ -79,6 +88,11 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(initialSaved?.selectedSubjectId ?? '');
   const [selectedSubjectName, setSelectedSubjectName] = useState<string>(initialSaved?.selectedSubjectName ?? '');
   const [selectedSubjectColor, setSelectedSubjectColor] = useState<string>(initialSaved?.selectedSubjectColor ?? '');
+
+  // Picture-in-Picture window reference
+  const [pipWindow, setPipWindow] = useState<Window | null>(null);
+  const isPipSupported = typeof window !== 'undefined' && 'documentPictureInPicture' in window;
+  const isPipActive = pipWindow !== null && !pipWindow.closed;
 
   const clearTimerInterval = () => {
     if (intervalRef.current !== null) {
@@ -162,8 +176,34 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     clearTimerInterval();
     setStatus('COMPLETED');
     localStorage.removeItem(TIMER_STORAGE_KEY);
+
+    // Close PiP window if open when session ends
+    if (pipWindow && !pipWindow.closed) {
+      pipWindow.close();
+      setPipWindow(null);
+    }
+
     return result;
-  }, [status]);
+  }, [status, pipWindow]);
+
+  const stopAndSave = useCallback(async (): Promise<CompletedSessionData | null> => {
+    const result = stop();
+    if (result && selectedSubjectName) {
+      try {
+        await sessionService.createSession({
+          subjectId: selectedSubjectId || undefined,
+          subject: selectedSubjectName,
+          duration: result.durationSeconds,
+          startedAt: result.startedAt,
+          endedAt: result.endedAt,
+          completed: true,
+        });
+      } catch (e) {
+        console.error('Failed to automatically save focus session:', e);
+      }
+    }
+    return result;
+  }, [stop, selectedSubjectId, selectedSubjectName]);
 
   const reset = useCallback(() => {
     clearTimerInterval();
@@ -173,7 +213,98 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     setElapsedSeconds(0);
     setStatus('IDLE');
     localStorage.removeItem(TIMER_STORAGE_KEY);
-  }, []);
+
+    if (pipWindow && !pipWindow.closed) {
+      pipWindow.close();
+      setPipWindow(null);
+    }
+  }, [pipWindow]);
+
+  // Close floating window helper
+  const closePip = useCallback(() => {
+    if (pipWindow && !pipWindow.closed) {
+      pipWindow.close();
+    }
+    setPipWindow(null);
+  }, [pipWindow]);
+
+  // Open Document Picture-in-Picture window
+  const openPip = useCallback(async () => {
+    if (!isPipSupported) {
+      return;
+    }
+
+    // If window is already open, simply bring it to focus
+    if (pipWindow && !pipWindow.closed) {
+      pipWindow.focus();
+      return;
+    }
+
+    try {
+      type PipApi = {
+        documentPictureInPicture?: {
+          requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>;
+        };
+      };
+      const api = window as unknown as PipApi;
+      if (!api.documentPictureInPicture) return;
+
+      const pipWin = await api.documentPictureInPicture.requestWindow({
+        width: 340,
+        height: 240,
+      });
+
+      // Clone existing styles into PiP document
+      document.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
+        pipWin.document.head.appendChild(node.cloneNode(true));
+      });
+
+      // Match current application theme
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      pipWin.document.documentElement.setAttribute('data-theme', currentTheme);
+
+      // Base reset styling for PiP canvas
+      const baseStyle = pipWin.document.createElement('style');
+      baseStyle.textContent = `
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background-color: var(--bg);
+          color: var(--text-primary);
+          font-family: var(--font-sans);
+          -webkit-font-smoothing: antialiased;
+        }
+      `;
+      pipWin.document.head.appendChild(baseStyle);
+
+      // Listen for window close
+      pipWin.addEventListener('pagehide', () => {
+        setPipWindow(null);
+      });
+
+      setPipWindow(pipWin);
+    } catch (err) {
+      console.error('Failed to open Document Picture-in-Picture window:', err);
+    }
+  }, [isPipSupported, pipWindow]);
+
+  // Synchronize theme changes from main document to PiP window
+  useEffect(() => {
+    if (pipWindow && !pipWindow.closed) {
+      const syncTheme = () => {
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        pipWindow.document.documentElement.setAttribute('data-theme', theme);
+      };
+      syncTheme();
+
+      const observer = new MutationObserver(syncTheme);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+      return () => observer.disconnect();
+    }
+  }, [pipWindow]);
 
   // Interval loop calculating exact difference between current timestamp and start timestamp
   useEffect(() => {
@@ -228,10 +359,26 @@ export const FocusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         pause,
         resume,
         stop,
+        stopAndSave,
         reset,
+        isPipSupported,
+        isPipActive,
+        openPip,
+        closePip,
       }}
     >
       {children}
+
+      {/* Render floating PiP window content via React Portal directly into pipWindow document body */}
+      {pipWindow && !pipWindow.closed && createPortal(
+        <PipFloatingTimer
+          onClose={closePip}
+          onFocusOpener={() => {
+            window.focus();
+          }}
+        />,
+        pipWindow.document.body
+      )}
     </FocusTimerContext.Provider>
   );
 };
