@@ -155,305 +155,320 @@ export const Dashboard: React.FC = () => {
   const strokeDashoffset = circumference - (circumference * Math.min(100, animatedPercent)) / 100;
 
   return (
-    <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: '56px' }}>
+    <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
       {/* ═══════════════════════════════════════════════════════════════
-          SECTION 1: ASYMMETRIC EDITORIAL HERO (Direct Reference Adaptation)
-          Left: Welcome back greeting & Quick actions
-          Right: Dominant Focus Centerpiece & Priority Queue
+          SECTION 1: TOP HEADER ROW (Full-Width Greeting & Quick Actions)
+          Left: Welcome back greeting
+          Right: Primary action buttons
+          ═══════════════════════════════════════════════════════════════ */}
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '20px',
+        }}
+        className="dashboard-header"
+      >
+        <h1
+          className="display-hero"
+          style={{
+            margin: 0,
+            lineHeight: 1.1,
+            fontSize: 'clamp(32px, 4.5vw, 48px)',
+          }}
+        >
+          Welcome back, {userName}.
+        </h1>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => navigate('/focus')}
+            className="btn btn-primary"
+            style={{
+              padding: '12px 24px',
+              fontSize: '13px',
+              fontWeight: 600,
+              gap: '8px',
+            }}
+          >
+            <Play size={14} fill="currentColor" />
+            <span>Launch Focus Studio</span>
+            <ArrowRight size={14} />
+          </button>
+
+          <button
+            onClick={() => navigate('/tasks')}
+            className="btn btn-outline"
+            style={{
+              padding: '12px 22px',
+              fontSize: '13px',
+              fontWeight: 600,
+            }}
+          >
+            <span>Manage Coursework</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          SECTION 2: MAIN DASHBOARD SECTION (Two Balanced Columns)
+          Left: Today's Focus Centerpiece
+          Right: Priority Assignment Queue
           ═══════════════════════════════════════════════════════════════ */}
       <section
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.25fr) minmax(360px, 1fr)',
-          gap: '48px',
-          alignItems: 'start',
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+          gap: '24px',
+          alignItems: 'stretch',
         }}
-        className="hero-grid"
+        className="main-dashboard-grid"
       >
-        {/* ── Left Column: Editorial Hero & Actions ── */}
+        {/* ── Left Column: Today's Focus Centerpiece ── */}
         <div
+          className="editorial-panel corner-ticks"
           style={{
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
-            gap: '36px',
-            maxWidth: '640px',
-            paddingTop: '20px',
-            paddingBottom: '20px',
+            justifyContent: 'space-between',
+            gap: '24px',
+            boxShadow: 'var(--shadow-md)',
+            height: '100%',
           }}
         >
-          {/* Main Heading (Editorial Serif) */}
-          <h1 className="display-hero" style={{ margin: 0, lineHeight: 1.1 }}>
-            Welcome back, {userName}.
-          </h1>
-
-          {/* High-contrast Action Pill Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          {/* Header row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Clock size={14} style={{ color: 'var(--text-muted)' }} />
+              <span className="text-meta">Today's Focus Duration</span>
+            </div>
             <button
-              onClick={() => navigate('/focus')}
-              className="btn btn-primary"
+              type="button"
+              onClick={() => setIsGoalModalOpen(true)}
+              className="btn-ghost"
               style={{
-                padding: '12px 28px',
-                fontSize: '14px',
-                gap: '10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontFamily: 'var(--font-digits)',
+                fontVariantNumeric: 'tabular-nums',
+                fontSize: '11px',
+                fontWeight: 600,
+                padding: '3px 8px',
+                borderRadius: '4px',
+                border: '1px solid var(--border)',
               }}
+              title="Edit Daily Goal Target"
             >
-              <Play size={14} fill="currentColor" />
-              <span>Launch Focus Studio</span>
-              <ArrowRight size={14} />
-            </button>
-
-            <button
-              onClick={() => navigate('/tasks')}
-              className="btn btn-outline"
-              style={{
-                padding: '12px 24px',
-                fontSize: '14px',
-              }}
-            >
-              <span>Manage Coursework</span>
+              <span>TARGET: {formatGoal(goalMinutes)}</span>
+              <Sliders size={11} />
             </button>
           </div>
-        </div>
 
-        {/* ── Right Column: The Layered Interface Centerpiece ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Card 1: Today's Focus Centerpiece */}
+          {/* Distinctive Animated Circular Progress Ring Centerpiece */}
           <div
-            className="editorial-panel corner-ticks"
             style={{
+              position: 'relative',
               display: 'flex',
-              flexDirection: 'column',
-              gap: '24px',
-              boxShadow: 'var(--shadow-md)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px 0',
             }}
           >
-            {/* Header row */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Clock size={14} style={{ color: 'var(--text-muted)' }} />
-                <span className="text-meta">Today's Focus Duration</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsGoalModalOpen(true)}
-                className="btn-ghost"
+            <svg width="220" height="220" viewBox="0 0 220 220" style={{ overflow: 'visible' }}>
+              {/* Background Ring Track */}
+              <circle
+                cx="110"
+                cy="110"
+                r={circleRadius}
+                fill="none"
+                stroke="var(--border)"
+                strokeWidth="8"
+                opacity="0.6"
+              />
+              {/* Subtle Inner Hairline Calibration Ring */}
+              <circle
+                cx="110"
+                cy="110"
+                r={circleRadius - 12}
+                fill="none"
+                stroke="var(--border-subtle)"
+                strokeWidth="1"
+                strokeDasharray="2 6"
+              />
+              {/* Animated Foreground Progress Arc */}
+              <circle
+                cx="110"
+                cy="110"
+                r={circleRadius}
+                fill="none"
+                stroke={isGoalReached ? 'var(--accent-amber)' : 'var(--text-primary)'}
+                strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                transform="rotate(-90 110 110)"
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontFamily: 'var(--font-digits)',
-                  fontVariantNumeric: 'tabular-nums',
+                  transition: 'stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease',
+                }}
+              />
+            </svg>
+
+            {/* Inside the Ring: Centered Numerals & Status */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                pointerEvents: 'none',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-sans)',
                   fontSize: '11px',
                   fontWeight: 600,
-                  padding: '3px 8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--border)',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-muted)',
+                  marginBottom: '6px',
                 }}
-                title="Edit Daily Goal Target"
               >
-                <span>TARGET: {formatGoal(goalMinutes)}</span>
-                <Sliders size={11} />
-              </button>
-            </div>
+                Today's Study
+              </span>
 
-            {/* Distinctive Animated Circular Progress Ring Centerpiece */}
-            <div
-              style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '10px 0',
-              }}
-            >
-              <svg width="220" height="220" viewBox="0 0 220 220" style={{ overflow: 'visible' }}>
-                {/* Background Ring Track */}
-                <circle
-                  cx="110"
-                  cy="110"
-                  r={circleRadius}
-                  fill="none"
-                  stroke="var(--border)"
-                  strokeWidth="8"
-                  opacity="0.6"
-                />
-                {/* Subtle Inner Hairline Calibration Ring */}
-                <circle
-                  cx="110"
-                  cy="110"
-                  r={circleRadius - 12}
-                  fill="none"
-                  stroke="var(--border-subtle)"
-                  strokeWidth="1"
-                  strokeDasharray="2 6"
-                />
-                {/* Animated Foreground Progress Arc */}
-                <circle
-                  cx="110"
-                  cy="110"
-                  r={circleRadius}
-                  fill="none"
-                  stroke={isGoalReached ? 'var(--accent-amber)' : 'var(--text-primary)'}
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  transform="rotate(-90 110 110)"
-                  style={{
-                    transition: 'stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease',
-                  }}
-                />
-              </svg>
-
-              {/* Inside the Ring: Centered Numerals & Status */}
               <div
                 style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                  pointerEvents: 'none',
+                  fontFamily: 'var(--font-digits)',
+                  fontVariantNumeric: 'tabular-nums',
+                  fontSize: hrs > 0 ? '38px' : '44px',
+                  fontWeight: 700,
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1,
+                  color: 'var(--text-primary)',
                 }}
               >
-                <span
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                  }}
-                >
-                  Today's Study
-                </span>
+                {hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}
+              </div>
 
-                <div
-                  style={{
-                    fontFamily: 'var(--font-digits)',
-                    fontVariantNumeric: 'tabular-nums',
-                    fontSize: hrs > 0 ? '38px' : '44px',
-                    fontWeight: 700,
-                    letterSpacing: '-0.03em',
-                    lineHeight: 1,
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}
-                </div>
-
-                <div style={{ marginTop: '8px' }}>
-                  {isGoalReached ? (
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        fontSize: '11px',
-                        fontFamily: 'var(--font-sans)',
-                        fontWeight: 600,
-                        color: 'var(--accent-amber)',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        backgroundColor: 'var(--accent-amber-subtle)',
-                        border: '1px solid rgba(212, 168, 67, 0.25)',
-                      }}
-                    >
-                      <Sparkles size={11} /> GOAL ACHIEVED
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-digits)',
-                        fontVariantNumeric: 'tabular-nums',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: 'var(--text-secondary)',
-                      }}
-                    >
-                      {progressPercent}% completed
-                    </span>
-                  )}
-                </div>
+              <div style={{ marginTop: '8px' }}>
+                {isGoalReached ? (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px',
+                      fontFamily: 'var(--font-sans)',
+                      fontWeight: 600,
+                      color: 'var(--accent-amber)',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      backgroundColor: 'var(--accent-amber-subtle)',
+                      border: '1px solid rgba(212, 168, 67, 0.25)',
+                    }}
+                  >
+                    <Sparkles size={11} /> GOAL ACHIEVED
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-digits)',
+                      fontVariantNumeric: 'tabular-nums',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    {progressPercent}% completed
+                  </span>
+                )}
               </div>
             </div>
-
-            {/* Supporting Information Metrics Grid */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '8px',
-                padding: '12px 14px',
-                backgroundColor: 'var(--bg-subtle)',
-                borderRadius: '8px',
-                border: '1px solid var(--border)',
-                textAlign: 'center',
-              }}
-            >
-              <div>
-                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
-                  Daily Target
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
-                  {formatGoal(goalMinutes)}
-                </div>
-              </div>
-
-              <div style={{ borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
-                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
-                  Completion
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: isGoalReached ? 'var(--accent-amber)' : 'var(--text-primary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
-                  {progressPercent}%
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
-                  Remaining
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
-                  {isGoalReached ? 'Complete' : `${Math.max(0, goalMinutes - todayMinutes)}m`}
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Action Button: Launch Focus Mode directly */}
-            <button
-              onClick={() => navigate('/focus')}
-              className="btn btn-outline"
-              style={{
-                width: '100%',
-                padding: '11px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-              }}
-            >
-              <Play size={13} fill="currentColor" />
-              <span>Resume Focus Session</span>
-            </button>
           </div>
 
-          {/* Card 2: Priority Coursework Queue (Styled like Active Security/Transactions in Reference) */}
+          {/* Supporting Information Metrics Grid */}
           <div
-            className="editorial-panel"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px',
+              padding: '12px 14px',
+              backgroundColor: 'var(--bg-subtle)',
+              borderRadius: '8px',
+              border: '1px solid var(--border)',
+              textAlign: 'center',
             }}
           >
+            <div>
+              <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
+                Daily Target
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
+                {formatGoal(goalMinutes)}
+              </div>
+            </div>
+
+            <div style={{ borderLeft: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
+                Completion
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: isGoalReached ? 'var(--accent-amber)' : 'var(--text-primary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
+                {progressPercent}%
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '2px' }}>
+                Remaining
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'var(--font-digits)', fontVariantNumeric: 'tabular-nums' }}>
+                {isGoalReached ? 'Complete' : `${Math.max(0, goalMinutes - todayMinutes)}m`}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Action Button: Launch Focus Mode directly */}
+          <button
+            onClick={() => navigate('/focus')}
+            className="btn btn-outline"
+            style={{
+              width: '100%',
+              padding: '11px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <Play size={13} fill="currentColor" />
+            <span>Resume Focus Session</span>
+          </button>
+        </div>
+
+        {/* ── Right Column: Priority Assignment Queue ── */}
+        <div
+          className="editorial-panel corner-ticks"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: '20px',
+            boxShadow: 'var(--shadow-md)',
+            height: '100%',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Header row */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: 'var(--accent-coral)', fontSize: '11px' }}>●</span>
@@ -473,14 +488,50 @@ export const Dashboard: React.FC = () => {
               </Link>
             </div>
 
+            {/* Coursework summary status card */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 14px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--bg-subtle)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  Coursework Status
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-digits)', marginTop: '2px' }}>
+                  {data.completedTasks} completed <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--text-muted)' }}>of {data.totalTasks} total</span>
+                </div>
+              </div>
+              <span
+                style={{
+                  display: 'inline-block',
+                  padding: '3px 10px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  backgroundColor: data.pendingTasks > 0 ? 'var(--accent-coral-subtle)' : 'var(--accent-olive-light)',
+                  color: data.pendingTasks > 0 ? 'var(--accent-coral)' : 'var(--accent-olive)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                {data.pendingTasks} pending
+              </span>
+            </div>
+
             {/* Task Row Items */}
             {data.recentTasks.length === 0 ? (
-              <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+              <div style={{ padding: '36px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
                 No active coursework scheduled. All assignments clear.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {data.recentTasks.slice(0, 3).map((task) => {
+                {data.recentTasks.slice(0, 4).map((task) => {
                   const isCompleted = task.status === 'COMPLETED';
                   return (
                     <div
@@ -540,19 +591,40 @@ export const Dashboard: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Action button at bottom to match left card height */}
+          <button
+            onClick={() => navigate('/tasks')}
+            className="btn btn-outline"
+            style={{
+              width: '100%',
+              padding: '11px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            <span>Manage All Coursework Tasks</span>
+            <ArrowRight size={13} />
+          </button>
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════
-          SECTION 2: ASYMMETRIC ANALYTICAL MATRIX
+          SECTION 3: LOWER DASHBOARD ANALYTICS (Balanced Widths)
           Left: Weekly Consistency Timeline Visualizer
           Right: Subject Distribution Breakdown
           ═══════════════════════════════════════════════════════════════ */}
       <section
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.4fr) minmax(320px, 1fr)',
-          gap: '32px',
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+          gap: '24px',
+          alignItems: 'stretch',
         }}
         className="analytics-grid"
       >
@@ -851,12 +923,18 @@ export const Dashboard: React.FC = () => {
       {/* Responsive layout rules */}
       <style>{`
         @media (max-width: 960px) {
-          .hero-grid {
+          .dashboard-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+          }
+          .main-dashboard-grid {
             grid-template-columns: 1fr !important;
-            gap: 36px !important;
+            gap: 20px !important;
           }
           .analytics-grid {
             grid-template-columns: 1fr !important;
+            gap: 20px !important;
           }
         }
       `}</style>
